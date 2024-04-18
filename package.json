@@ -1,0 +1,24 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "axios": "^1.1.2",
+        "laravel-vite-plugin": "^0.7.2",
+        "sass": "^1.75.0",
+        "unplugin-vue-components": "^0.26.0",
+        "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "@inertiajs/vue3": "^1.0.15",
+        "@popperjs/core": "^2.11.8",
+        "@vitejs/plugin-vue": "^4.5.2",
+        "chart.js": "3.3.2",
+        "primeflex": "^3.3.1",
+        "primeicons": "^6.0.1",
+        "primevue": "3.49.1",
+        "vue": "^3.4.21"
+    }
+}

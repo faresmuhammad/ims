@@ -1,0 +1,217 @@
+Project InventoryManagementSystem {
+    database_type: 'MySQL'
+    note: 'Inventory Management System Database'
+}
+
+enum Gender{
+  male
+  female
+}
+
+enum CategoryTarget{
+  Customer
+  Owner
+}
+
+enum OrderStatus{
+  Processing
+  Shipped
+  OnTheWay
+  Delivered
+}
+
+enum PaymentMethod{
+  Cash
+  CreditCard
+}
+
+Table Users {
+  id bigint [pk]
+  username string [not null]
+  email string [not null]
+  email_verified_at timestamp
+  password string [not null]
+  remember_token string
+  created_at timestamp
+  updated_at timestamp
+}
+//Roles can be Customer, Admin, Super Admin and Warehouse Worker
+Table Roles{
+  id bigint [pk]
+  name string [not null]
+  description text
+}
+
+Table user_role_pivot{
+  user_id bigint [pk, ref: > Users.id]
+  role_id bigint [pk, ref: > Roles.id]
+}
+
+// Table Profiles{
+//   id bigint [pk]
+//   first_name string [not null]
+//   last_name string [not null]
+//   phone_number string
+//   birthday date
+//   gender Gender
+//   locale char(2) [not null, default: "en"]
+//   user_id bigint [ref: - Users.id]
+// }
+
+// Table Addresses{
+//   id bigint [pk, not null]
+//   phone_number string [not null]
+//   street string [not null]
+//   city string [not null]
+//   state string [not null]
+//   zip_code string [not null]
+//   country string [not null]
+//   is_main bool
+//   profile_id bigint [ref: > Profiles.id]
+// }
+
+
+Table Categories {
+  id bigint [pk, not null, increment]
+  parent_id bigint [ref: < Categories.id]
+  name string [not null]
+  slug string [not null]
+  description text
+  image string
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+Table Products{
+  id bigint [pk]
+  code string [unique, not null]
+  name string [not null]
+  slug string [not null]
+  description text
+  //price field is the current price
+  //So when the price is updated, a price history entry will be added in PriceHistory Table
+  price double [default: 0.0]
+  category_id bigint [ref: > Categories.id]
+  stock_offset int [null]
+  // info json
+  created_at timestamp
+  updated_at timestamp
+  // template_id bigint [null, ref: - ProductTemplate.id]
+}
+
+
+//The purpose of this table is to remember the specialized product info with default values. 
+// Table ProductTemplate{
+//   id bigint [pk]
+//   name string [not null]
+//   information json
+// }
+
+// Table product_category_mapping{
+//   id bigint [pk]
+//   product_id bigint [ref: > Products.id]
+//   category_id bigint [ref: > Categories.id]
+//   target CategoryTarget
+// }
+
+// Table CartItems{
+//   id bigint [pk]
+//   user_id bigint [ref: > Users.id]
+//   product_id bigint [ref: > Products.id]
+//   quantity int [default: 1]
+//   options json
+// }
+
+// Table EOrders{
+//   id bigint pk
+//   user_id bigint [ref: > Users.id]
+//   total_amount double
+//   date timestamp
+//   status OrderStatus
+//   address_id bigint [ref: > Addresses.id]
+//   payment_method PaymentMethod
+// }
+
+// Table EOrderItems{
+//   id bigint pk
+//   order_id bigint [ref: > EOrders.id]
+//   product_id bigint [ref: - Products.id]
+//   quantity int [default: 1]
+//   price_per_unit double
+//   discount float
+// }
+
+
+//Related to IMS System
+Table Suppliers{
+  id bigint [pk]
+  code string [unique]
+  name string [not null]
+  phone_number string
+}
+
+// Table Warehouses{
+//   id bigint pk
+//   name string [not null]
+//   phone_number string
+//   location_address text
+//   locations_coordinates json //{longitude,latitude}
+// }
+
+Table Orders{
+  id bigint [pk]
+  user_id bigint [ref: > Users.id]
+  supplier_id bigint [ref: > Suppliers.id]
+  // warehouse_id bigint [ref: > Warehouses.id]
+  date timestamp
+  total_amount double
+  payment_method PaymentMethod
+  //This discount is overall order discount and it's separated from discount per item
+  discount float [default: 0.0]
+}
+
+Table OrderItems{
+  id bigint [pk]
+  order_id bigint [ref: > Orders.id]
+  product_id bigint [ref: - Products.id]
+  discount float [default: 0.0]
+  price_per_unit double
+  quantity int
+}
+
+Table Stocks{
+  id bigint [pk]
+  product_id bigint [ref: > Products.id]
+  // warehouse_id bigint [ref: > Warehouses.id]
+  supplier_id bigint [ref: > Suppliers.id]
+  expiration_date date [null]
+  original_quantity int
+  quantity_in_stock int
+  price double
+}
+
+Table Notes{
+  id bigint [pk]
+  content text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table Shifts{
+    id bigint [pk]
+    start_date date [not null, note: "Default value is the current date"]
+    start_time time [not null, note: "Default value is the current time"]
+    end_date date [null, default: null]
+    end_time time [null]
+    expected_amount double [null]
+    real_amount double [null]
+    difference double [null]
+}
+// Table PriceHistory{
+//   id bigint pk
+//   product_id bigint [ref: > Products.id]
+//   start_date date
+//   end_date date
+//   unit_price double
+// }
