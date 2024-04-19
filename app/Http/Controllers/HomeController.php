@@ -9,7 +9,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        return inertia('Login');
+        return inertia('Register');
     }
 
     
