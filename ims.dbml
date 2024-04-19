@@ -27,9 +27,8 @@ enum PaymentMethod{
 
 Table Users {
   id bigint [pk]
-  username string [not null]
-  email string [not null]
-  email_verified_at timestamp
+  username string [not null,unique]
+  email string [null,unique]
   password string [not null]
   remember_token string
   created_at timestamp

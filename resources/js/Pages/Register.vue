@@ -1,5 +1,3 @@
-//TODO: Send Backend request to register user
-//TODO: Redirect to home page
 <template>
 
     <Head title="Sign Up" />
@@ -16,37 +14,44 @@
                         <span class="text-600 font-medium text-3xl">Sign Up</span>
                     </div>
 
-                    <div class="flex flex-column gap-4">
+                    <form @submit.prevent="register()" class="flex flex-column gap-4">
                         <div class="flex flex-column">
                             <label for="username" class="block text-900 text-xl font-medium mb-2">Username</label>
                             <InputText id="username" type="text" class="w-full md:w-30rem mb-2" style="padding: 1rem"
-                                v-model="form.username" placeholder="Username"/>
+                                v-model="form.username" />
                             <small class="p-error" v-if="errorMessage.username">{{ errorMessage.username }}</small>
                         </div>
 
                         <div class="flex flex-column">
                             <label for="email" class="block text-900 text-xl font-medium mb-2">Email</label>
-                            <InputText id="email" type="email" class="w-full md:w-30rem mb-2" style="padding: 1rem" v-model="form.email"
-                                :invalid="!errorMessage.validEmail" placeholder="Email"/>
+                            <InputText id="email" type="email" class="w-full md:w-30rem mb-2" style="padding: 1rem"
+                                v-model="form.email" :invalid="!errorMessage.validEmail" />
                             <small class="p-error" v-if="errorMessage.email">{{ errorMessage.email }}</small>
                         </div>
 
 
                         <div class="flex flex-column">
                             <label for="password" class="block text-900 font-medium text-xl mb-2">Password</label>
-                            <Password id="password" v-model="form.password" placeholder="Password" :toggleMask="true"
-                                class="w-full md:w-30rem mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
+                            <Password id="password" v-model="form.password" :toggleMask="true"
+                                class="w-full md:w-30rem mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }">
+                            </Password>
                         </div>
 
                         <div class="flex flex-column">
-                            <label for="password-confirmation" class="block text-900 font-medium text-xl mb-2">Password Confirmation</label>
-                            <Password id="password-confirmation" v-model="form.passwordConfirmation" placeholder="Password Confirmation" :toggleMask="true"
-                                class="w-full md:w-30rem mb-2" inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
+                            <label for="password-confirmation" class="block text-900 font-medium text-xl mb-2">Password
+                                Confirmation</label>
+                            <Password id="password-confirmation" v-model="form.passwordConfirmation" :toggleMask="true"
+                                class="w-full md:w-30rem mb-2" inputClass="w-full" :inputStyle="{ padding: '1rem' }">
+                            </Password>
                             <small class="p-error" v-if="errorMessage.password">{{ errorMessage.password }}</small>
                         </div>
 
-                        <Button @click="register" label="Sign Up" class="w-full p-3 text-xl"></Button>
-                    </div>
+                        <Button type="submit" label="Sign Up" class="w-full p-3 text-xl"></Button>
+                        <span class="text-600 font-medium">Do you have an account,
+                            <a class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)"
+                                @click="navigateToLogin">Login</a>
+                        </span>
+                    </form>
                 </div>
             </div>
         </div>
@@ -55,7 +60,7 @@
 
 
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import Password from 'primevue/password';
 import { reactive } from 'vue';
 const form = reactive({
@@ -110,8 +115,15 @@ const validate = () => {
     validateEmail();
     passwordMatching();
 }
+
+const navigateToLogin = () => router.get('/login')
 const register = () => {
     validate()
-    console.log(form)
+    router.post('/register', {
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        password_confirmation: form.passwordConfirmation
+    })
 }
 </script>

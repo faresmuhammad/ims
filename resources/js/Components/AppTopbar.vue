@@ -1,7 +1,7 @@
 <script setup>
+import { router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 
-//TODO: Integrate with sidebar navigation
 import { useLayout } from '../composables/layout';
 
 const { onMenuToggle } = useLayout();
@@ -23,7 +23,6 @@ const onTopBarMenuButton = () => {
 };
 const onSettingsClick = () => {
     topbarMenuActive.value = false;
-    // router.push('/documentation');
 };
 const topbarMenuClasses = computed(() => {
     return {
@@ -55,6 +54,11 @@ const isOutsideClicked = (event) => {
 
     return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
+
+
+const logout = () => {
+    router.post('/logout')
+}
 </script>
 
 <template>
@@ -77,7 +81,7 @@ const isOutsideClicked = (event) => {
                 <i class="pi pi-calendar"></i>
                 <span>Calendar</span>
             </button>
-            <button  class="p-link layout-topbar-button" @click="onTopBarMenuButton()">
+            <button  class="p-link layout-topbar-button" @click="logout()">
                 <i class="pi pi-user"></i>
                 <span>Profile</span>
             </button>
