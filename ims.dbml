@@ -46,37 +46,12 @@ Table user_role_pivot{
   role_id bigint [pk, ref: > Roles.id]
 }
 
-// Table Profiles{
-//   id bigint [pk]
-//   first_name string [not null]
-//   last_name string [not null]
-//   phone_number string
-//   birthday date
-//   gender Gender
-//   locale char(2) [not null, default: "en"]
-//   user_id bigint [ref: - Users.id]
-// }
-
-// Table Addresses{
-//   id bigint [pk, not null]
-//   phone_number string [not null]
-//   street string [not null]
-//   city string [not null]
-//   state string [not null]
-//   zip_code string [not null]
-//   country string [not null]
-//   is_main bool
-//   profile_id bigint [ref: > Profiles.id]
-// }
-
-
 Table Categories {
   id bigint [pk, not null, increment]
   parent_id bigint [ref: < Categories.id]
   name string [not null]
   slug string [not null]
   description text
-  image string
   created_at timestamp
   updated_at timestamp
 }
@@ -93,53 +68,11 @@ Table Products{
   price double [default: 0.0]
   category_id bigint [ref: > Categories.id]
   stock_offset int [null]
-  // info json
   created_at timestamp
   updated_at timestamp
-  // template_id bigint [null, ref: - ProductTemplate.id]
 }
 
 
-//The purpose of this table is to remember the specialized product info with default values. 
-// Table ProductTemplate{
-//   id bigint [pk]
-//   name string [not null]
-//   information json
-// }
-
-// Table product_category_mapping{
-//   id bigint [pk]
-//   product_id bigint [ref: > Products.id]
-//   category_id bigint [ref: > Categories.id]
-//   target CategoryTarget
-// }
-
-// Table CartItems{
-//   id bigint [pk]
-//   user_id bigint [ref: > Users.id]
-//   product_id bigint [ref: > Products.id]
-//   quantity int [default: 1]
-//   options json
-// }
-
-// Table EOrders{
-//   id bigint pk
-//   user_id bigint [ref: > Users.id]
-//   total_amount double
-//   date timestamp
-//   status OrderStatus
-//   address_id bigint [ref: > Addresses.id]
-//   payment_method PaymentMethod
-// }
-
-// Table EOrderItems{
-//   id bigint pk
-//   order_id bigint [ref: > EOrders.id]
-//   product_id bigint [ref: - Products.id]
-//   quantity int [default: 1]
-//   price_per_unit double
-//   discount float
-// }
 
 
 //Related to IMS System
@@ -150,24 +83,18 @@ Table Suppliers{
   phone_number string
 }
 
-// Table Warehouses{
-//   id bigint pk
-//   name string [not null]
-//   phone_number string
-//   location_address text
-//   locations_coordinates json //{longitude,latitude}
-// }
+
 
 Table Orders{
   id bigint [pk]
   user_id bigint [ref: > Users.id]
   supplier_id bigint [ref: > Suppliers.id]
-  // warehouse_id bigint [ref: > Warehouses.id]
   date timestamp
   total_amount double
   payment_method PaymentMethod
   //This discount is overall order discount and it's separated from discount per item
   discount float [default: 0.0]
+  is_draft bool [default: true]
 }
 
 Table OrderItems{
@@ -182,7 +109,6 @@ Table OrderItems{
 Table Stocks{
   id bigint [pk]
   product_id bigint [ref: > Products.id]
-  // warehouse_id bigint [ref: > Warehouses.id]
   supplier_id bigint [ref: > Suppliers.id]
   expiration_date date [null]
   original_quantity int
@@ -207,10 +133,3 @@ Table Shifts{
     real_amount double [null]
     difference double [null]
 }
-// Table PriceHistory{
-//   id bigint pk
-//   product_id bigint [ref: > Products.id]
-//   start_date date
-//   end_date date
-//   unit_price double
-// }

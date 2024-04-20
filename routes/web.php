@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\NavigationController;
 use App\Http\Controllers\UserController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
@@ -27,5 +28,6 @@ Route::middleware('guest')->group((function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
 
-    Route::get('/', [HomeController::class, 'index']);
+    Route::inertia('/','Dashboard');
+    Route::get('/categories',[CategoryController::class,'index']);
 });

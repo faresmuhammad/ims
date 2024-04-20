@@ -2,7 +2,7 @@
 
     <Head title="Dashboard" />
     <app-layout>
-
+        <h2>Dashboard</h2>
     </app-layout>
 </template>
 
