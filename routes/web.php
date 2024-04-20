@@ -28,6 +28,6 @@ Route::middleware('guest')->group((function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
 
-    Route::inertia('/','Dashboard');
-    Route::get('/categories',[CategoryController::class,'index']);
+    Route::inertia('/', 'Dashboard');
+    Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
 });

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use Illuminate\Http\Request;
+use Exception;
 use Inertia\Inertia;
+use App\Models\Category;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -18,20 +20,49 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        Category::create([
+        $category = Category::create([
             'name' => $request->name,
-            'description' => $request->description
+            'slug' => Str::slug($request->name),
+            'description' => $request->description,
         ]);
+
+        if ($request->parent_id) {
+            $category->parent()->associate($request->parent_id);
+            $category->save();
+        }
+        $request->session()->flash('severity', 'success');
+        $request->session()->flash('message', $category->name . ' was created successfully');
     }
 
     public function update(Request $request, Category $category)
     {
-        //TODO: update category
+        try {
+            $category->update([
+                'name' => $request->name,
+                'slug' => Str::slug($request->name),
+                'description' => $request->description
+            ]);
+            $request->session()->flash('severity', 'success');
+            $request->session()->flash('message', 'Category was updated successfully');
+        } catch (Exception $exception) {
+            $request->session()->flash('severity', 'error');
+            $request->session()->flash('message', 'An Error occurred, try again');
+        }
     }
 
-    public function delete(Category $category)
+    public function destroy(Request $request, $id)
     {
         //TODO: check if category has products
-        //TODO: delete category
+
+        try {
+            $ids = explode(',',$id);
+            Category::whereIn('id', $ids)->delete();
+            $request->session()->flash('severity', 'success');
+            $request->session()->flash('message', 'Categories/Category deleted successfully');
+        } catch (Exception $exception) {
+
+            $request->session()->flash('severity', 'error');
+            $request->session()->flash('message', 'An Error occurred, try again');
+        }
     }
 }

@@ -3,6 +3,8 @@ import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import PrimeVue from "primevue/config";
+import ToastService from 'primevue/toastservice';
+
 import "primevue/resources/themes/aura-light-teal/theme.css";
 import "primevue/resources/primevue.min.css";
 import "primeicons/primeicons.css";
@@ -18,6 +20,7 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(PrimeVue, { inputStyle: "filled" })
+            .use(ToastService)
             .mount(el);
     },
 });

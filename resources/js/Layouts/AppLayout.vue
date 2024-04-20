@@ -4,6 +4,7 @@ import AppTopbar from './AppTopbar.vue';
 import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import { useLayout } from '@/composables/layout';
+import Toast from 'primevue/toast';
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 
