@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NavigationController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Inertia\Inertia;
@@ -32,4 +33,5 @@ Route::middleware('auth')->group(function () {
     Route::inertia('/', 'Dashboard');
     Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
     Route::resource('suppliers', SupplierController::class)->except(['create', 'show', 'edit']);
+    Route::resource('products', ProductController::class)->except(['create', 'edit']);
 });

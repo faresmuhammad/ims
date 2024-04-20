@@ -67,7 +67,7 @@ Table Products{
   //So when the price is updated, a price history entry will be added in PriceHistory Table
   price double [default: 0.0]
   category_id bigint [ref: > Categories.id]
-  stock_offset int [null]
+  stock_offset int [default: 0]
   created_at timestamp
   updated_at timestamp
 }
@@ -80,7 +80,7 @@ Table Suppliers{
   id bigint [pk]
   code string [unique]
   name string [not null]
-  phone_number string
+  phone string
 }
 
 
