@@ -9,7 +9,6 @@
 
                     <Toolbar class="mb-4">
                         <template v-slot:end>
-                            <!--//TODO: implement open new dialog and item selection to delete-->
                             <div class="my-2">
                                 <Button label="New" icon="pi pi-plus" class="p-button-success mr-2"
                                     @click="newCategoryDialog = true" />
