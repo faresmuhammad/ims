@@ -30,7 +30,7 @@
                         <div class="flex flex-column">
                             <label for="password" class="block text-900 font-medium text-xl mb-2">Password</label>
                             <Password id="password" v-model="form.password" :toggleMask="true" class="w-full mb-3"
-                                inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
+                                inputClass="w-full" :inputStyle="{ padding: '1rem' }" :feedback="false"></Password>
                             <small class="p-error" v-if="error.password">{{ error.password }}</small>
                         </div>
                         <div class="flex align-items-center justify-content-between mb-5 gap-5">
@@ -54,7 +54,6 @@
 <script setup>
 import { reactive } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
-
 
 const form = reactive({
     username: '',

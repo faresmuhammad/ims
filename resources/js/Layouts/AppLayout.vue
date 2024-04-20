@@ -3,7 +3,7 @@ import { computed, watch, ref } from 'vue';
 import AppTopbar from './AppTopbar.vue';
 import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
-import { useLayout } from '../composables/layout';
+import { useLayout } from '@/composables/layout';
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 

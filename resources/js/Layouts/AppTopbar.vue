@@ -2,7 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 
-import { useLayout } from '../composables/layout';
+import { useLayout } from '@/composables/layout';
 
 const { onMenuToggle } = useLayout();
 

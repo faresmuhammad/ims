@@ -40,7 +40,7 @@
                         <div class="flex flex-column">
                             <label for="password-confirmation" class="block text-900 font-medium text-xl mb-2">Password
                                 Confirmation</label>
-                            <Password id="password-confirmation" v-model="form.passwordConfirmation" :toggleMask="true"
+                            <Password id="password-confirmation" v-model="form.passwordConfirmation" :toggleMask="true" :feedback="false"
                                 class="w-full md:w-30rem mb-2" inputClass="w-full" :inputStyle="{ padding: '1rem' }">
                             </Password>
                             <small class="p-error" v-if="errorMessage.password">{{ errorMessage.password }}</small>

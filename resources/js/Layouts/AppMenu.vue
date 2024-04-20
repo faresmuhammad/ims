@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
-//TODO: Edit navigation menu items
 const model = ref([
     {
         items: [

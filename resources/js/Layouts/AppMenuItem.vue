@@ -1,12 +1,8 @@
 <script setup>
 import { ref, onBeforeMount, watch } from 'vue';
-// import { useRoute } from 'vue-router';
-import { useLayout } from '../composables/layout';
+import { useLayout } from '@/composables/layout';
 import { Link } from '@inertiajs/vue3';
 
-//TODO: Apply menu animation
-//TODO: Understand what this code does
-//TODO: Modify it to your needs
 
 const { layoutConfig, layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
 
@@ -72,12 +68,7 @@ const itemClick = (event, item) => {
 <template>
     <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
         <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>
-        <!-- <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url"
-            @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0">
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
-        </a> -->
+    
         <Link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item, index)"
             tabindex="0" :href="item.to">
         <i :class="item.icon" class="layout-menuitem-icon"></i>

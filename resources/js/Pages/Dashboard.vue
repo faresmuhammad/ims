@@ -9,5 +9,5 @@
 
 <script setup>
 import { Head } from '@inertiajs/vue3';
-import AppLayout from '../Components/AppLayout.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 </script>

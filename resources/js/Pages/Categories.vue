@@ -31,7 +31,7 @@
 
 
 <script setup>
-import AppLayout from '../Components/AppLayout.vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
