@@ -34,4 +34,5 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
     Route::resource('suppliers', SupplierController::class)->except(['create', 'show', 'edit']);
     Route::resource('products', ProductController::class)->except(['create', 'edit']);
+    Route::post('products/upload',[ProductController::class,'import']);
 });
