@@ -9,7 +9,15 @@ const model = ref([
             { label: 'Categories', icon: 'pi pi-fw pi-clone', to: '/categories' },
             { label: 'Products', icon: 'pi pi-fw pi-box', to: '/products' },
             { label: 'Suppliers', icon: 'pi pi-fw pi-truck', to: '/suppliers' },
-            { label: 'Orders', icon: 'pi pi-fw pi-list', to: '' },
+            {
+                label: 'Orders',
+                items: [
+                    { label: 'Orders', icon: 'pi pi-fw pi-list', to: '/' },
+                    { label: 'Customer', icon: 'pi pi-fw pi-list', to: '/' },
+                    { label: 'Supplier', icon: 'pi pi-fw pi-list', to: '/' },
+                    { label: 'Return', icon: 'pi pi-fw pi-list', to: '/' },
+                ]
+            },
             { label: 'Statistics', icon: 'pi pi-fw pi-chart-bar', to: '' },
             { label: 'Settings', icon: 'pi pi-fw pi-cog', to: '' },
 
