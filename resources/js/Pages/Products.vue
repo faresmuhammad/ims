@@ -9,10 +9,12 @@
 
                     <Toolbar class="mb-4">
                         <template v-slot:end>
-                                <FileUpload name="products[]" auto :customUpload="true" mode="basic" chooseLabel="Import Products" class="mr-2" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" :maxFileSize="1000000" 
-                                @uploader="uploadFile" />
-                                <Button label="New" icon="pi pi-plus" class="p-button-success mr-2"
-                                    @click="newProductDialog = true" />
+                            <FileUpload name="products[]" auto :customUpload="true" mode="basic"
+                                chooseLabel="Import Products" class="mr-2"
+                                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                :maxFileSize="1000000" @uploader="uploadFile" />
+                            <Button label="New" icon="pi pi-plus" class="p-button-success mr-2"
+                                @click="newProductDialog = true" />
                         </template>
 
                     </Toolbar>
@@ -38,6 +40,9 @@
                                 </template>
                             </template>
                         </Column>
+                            <template #empty>
+                                <h5 class="flex align-items-center justify-content-center">No Products Found</h5>
+                            </template>
                     </DataTable>
 
                     <Dialog v-model:visible="newProductDialog" header="Product Information" :style="{ width: '450px' }"
@@ -102,9 +107,7 @@ const props = defineProps({
 
 const page = usePage();
 
-const selectedProducts = ref([])
 const newProductDialog = ref(false)
-const deleteConfirmation = ref(false)
 
 
 const globalFilterFields = ref(['name', 'category_id'])
@@ -150,10 +153,10 @@ const hideProductDialog = () => {
     product.category_id = null
 }
 
-const uploadFile = (event)=>{
+const uploadFile = (event) => {
     console.log(event)
     const file = event.files[0];
-    router.post('/products/upload',{
+    router.post('/products/upload', {
         products: file
     })
 }

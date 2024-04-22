@@ -10,16 +10,18 @@ class Category extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description',
+        'name',
+        'slug',
+        'description',
     ];
 
     public function parent()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, );
     }
 
     public function subcategories()
     {
-        return $this->hasMany(Category::class);
+        return $this->hasMany(self::class, 'parent_id');
     }
 }

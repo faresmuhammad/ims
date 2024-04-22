@@ -96,7 +96,6 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
-        dd($request->all());
-        // Excel::import(new ProductsImport(),$request->file('products'));
+        Excel::import(new ProductsImport(),$request->file('products'));
     }
 }

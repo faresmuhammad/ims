@@ -13,8 +13,9 @@ class CategoryController extends Controller
     public function index()
     {
         //TODO:: return the related data needed for categories such as number of products
+        
         return Inertia::render('Categories', [
-            'categories' => Category::all()
+            'categories' => Category::where('parent_id', null)->with('subcategories')->get()
         ]);
     }
 

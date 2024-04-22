@@ -20,7 +20,9 @@
                     </Toolbar>
 
                     <DataTable v-model:selection="selectedCategories" v-model:editingRows="editingRows"
-                        :value="categories" editMode="row" @row-edit-save="updateCategory" dataKey="id">
+                        v-model:expandedRows="expandingRows" :value="categories" editMode="row"
+                        @row-edit-save="updateCategory" dataKey="id">
+                        <Column expander style="width: 1rem" />
                         <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
                         <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header">
                             <template #body="{ data, field }">
@@ -33,6 +35,28 @@
                         </Column>
                         <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center">
                         </Column>
+                        <!-- FIXME: selection and editing doesn't work in expansion slot -->
+                        <!-- FIXME: hide table header row -->
+                        <template #expansion="slotProps">
+                            <DataTable :value="slotProps.data.subcategories" v-model:selection="selectedSubcategories"
+                                v-model:editingRows="editingRowss" headerClass="noHeader" editMode="row"
+                                @row-edit-save="updateCategory" dataKey="id">
+                                <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                                <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header">
+                                    <template #body="{ data, field }">
+                                        {{ data[field] }}
+                                    </template>
+                                    <template #editor="{ data, field }">
+                                        <InputText v-if="field !== 'description'" v-model="data[field]" autofocus />
+                                        <Textarea v-else v-model="data[field]" rows="1" cols="50" autoResize
+                                            autofocus />
+                                    </template>
+                                </Column>
+                                <Column :rowEditor="true" style="width: 10%; min-width: 8rem"
+                                    bodyStyle="text-align:center">
+                                </Column>
+                            </DataTable>
+                        </template>
                     </DataTable>
 
                     <Dialog v-model:visible="newCategoryDialog" header="Category Details" :style="{ width: '450px' }"
@@ -98,7 +122,10 @@ const props = defineProps({
 const page = usePage();
 
 const editingRows = ref([])
+const editingRowss = ref([])
 const selectedCategories = ref([])
+const selectedSubcategories = ref([])
+const expandingRows = ref([])
 
 const newCategoryDialog = ref(false)
 const deleteConfirmation = ref(false)
@@ -158,3 +185,9 @@ const deleteCategories = () => {
     }
 }
 </script>
+
+<style>
+.noHeader {
+    display: 'none';
+}
+</style>
