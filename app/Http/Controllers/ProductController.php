@@ -54,20 +54,12 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
-        //
+        return Inertia::render('ProductInfo', [
+            'product' => Product::where('slug', $slug)->with('category:id,name')->first(),
+            'categories' => Category::select('id', 'name')->get()
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Product $product)
-    {
-        try {
-        } catch (Exception $exception) {
-            $request->session()->flash('severity', 'error');
-            $request->session()->flash('message', 'An Error occurred, try again');
-        }
-    }
 
     /**
      * Update the specified resource in storage.
@@ -75,6 +67,16 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         try {
+            $product->update([
+                'name' => $request->name,
+                'slug' => Str::slug($request->name),
+                'description' => $request->description,
+                'price' => $request->price,
+                'category_id' => $request->category_id,
+                'stock_offset' => $request->stock_offset
+            ]);
+            $request->session()->flash('severity', 'success');
+            $request->session()->flash('message', 'Product was updated successfully');
         } catch (Exception $exception) {
             $request->session()->flash('severity', 'error');
             $request->session()->flash('message', 'An Error occurred, try again');
@@ -84,9 +86,11 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request,Product $product)
+    public function destroy(Request $request, Product $product)
     {
         try {
+            $product->delete();
+            return redirect('/products');
         } catch (Exception $exception) {
             $request->session()->flash('severity', 'error');
             $request->session()->flash('message', 'An Error occurred, try again');
@@ -96,6 +100,6 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
-        Excel::import(new ProductsImport(),$request->file('products'));
+        Excel::import(new ProductsImport(), $request->file('products'));
     }
 }

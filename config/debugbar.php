@@ -14,7 +14,7 @@ return [
      |
      */
 
-    'enabled' => env('DEBUGBAR_ENABLED', null),
+    'enabled' => env('DEBUGBAR_ENABLED', true),
     'except' => [
         'telescope*',
         'horizon*',
@@ -61,7 +61,7 @@ return [
     |
     */
 
-    'editor' => env('DEBUGBAR_EDITOR') ?: env('IGNITION_EDITOR', 'phpstorm'),
+    'editor' => env('DEBUGBAR_EDITOR') ?: env('IGNITION_EDITOR', 'vscode'),
 
     /*
     |--------------------------------------------------------------------------

@@ -168,7 +168,6 @@ const updateCategory = (event) => {
         description: newData.description,
     }, {
         onSuccess: (pageObj) => {
-            console.log(pageObj.props)
             toast.add({ severity: pageObj.props.flash.severity, summary: pageObj.props.flash.message, life: 4000 });
         }
     })
