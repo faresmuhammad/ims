@@ -40,9 +40,9 @@
                                 </template>
                             </template>
                         </Column>
-                            <template #empty>
-                                <h5 class="flex align-items-center justify-content-center">No Products Found</h5>
-                            </template>
+                        <template #empty>
+                            <h5 class="flex align-items-center justify-content-center">No Products Found</h5>
+                        </template>
                     </DataTable>
 
                     <Dialog v-model:visible="newProductDialog" header="Product Information" :style="{ width: '450px' }"
@@ -162,5 +162,4 @@ const uploadFile = (event) => {
 }
 
 //TODO: Apply Supplier and expired date filters
-
 </script>

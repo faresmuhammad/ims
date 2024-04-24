@@ -14,7 +14,7 @@ const model = ref([
                 items: [
                     { label: 'Orders', icon: 'pi pi-fw pi-list', to: '/' },
                     { label: 'Customer', icon: 'pi pi-fw pi-list', to: '/' },
-                    { label: 'Supplier', icon: 'pi pi-fw pi-list', to: '/' },
+                    { label: 'Supplier', icon: 'pi pi-fw pi-list', to: '/orders/supplier' },
                     { label: 'Return', icon: 'pi pi-fw pi-list', to: '/' },
                 ]
             },

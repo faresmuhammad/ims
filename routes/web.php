@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\NavigationController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -35,4 +35,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('suppliers', SupplierController::class)->except(['create', 'show', 'edit']);
     Route::resource('products', ProductController::class)->except(['create', 'edit']);
     Route::post('products/upload',[ProductController::class,'import']);
+
+    Route::get('/orders/supplier',[OrderController::class,'supplier']);
+    Route::post('/orders/supplier',[OrderController::class,'newSupplierOrder']);
+    Route::get('/orders/product/{code}',[OrderController::class,'getProduct']);
+    Route::put('/orders/{order}',[OrderController::class,'update']);
 });
