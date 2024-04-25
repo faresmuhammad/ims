@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
@@ -24,20 +25,16 @@ class OrderController extends Controller
             'user_id' => auth()->id(),
             'supplier_id' => null
         ]);
-        // return redirect('/orders/supplier')->with('order', $order);
-        return inertia('Order/Supplier',[
-            'order' => $order,
-            'suppliers' => Supplier::select('id', 'name')->get()
-        ]);
+        return $order;
     }
 
     public function update(Order $order, Request $request)
     {
         $order->update([
-            'supplier_id' => $request->supplier_id,
-            'total_amount' => $request->total_amount,
-            'discount' => $request->discount,
-            'completed' => $request->completed
+            'supplier_id' => $request->supplier_id ?? $order->supplier_id,
+            'total_amount' => $request->total_amount ?? $order->total_amount,
+            'discount' => $request->discount ?? $order->discount,
+            'completed' => $request->completed ?? $order->completed
         ]);
         $request->session()->flash('severity', 'success');
         $request->session()->flash('message', 'Order updated successfully');
@@ -47,8 +44,20 @@ class OrderController extends Controller
     {
         $product = Product::where('code', $code)->first();
 
-        return response()->json([
-            'product' => $product
+        return $product;
+    }
+
+    public function newItem(Request $request)
+    {
+        $item = OrderItem::create([
+            'order_id' => $request->order_id,
+            'product_id' => $request->product_id,
+            'quantity' => $request->quantity,
+            'parts' => $request->parts,
+            'unit_price' => $request->unit_price,
+            'discount' => $request->discount,
+            'total_amount' => $request->total_amount
         ]);
+        return $item;
     }
 }

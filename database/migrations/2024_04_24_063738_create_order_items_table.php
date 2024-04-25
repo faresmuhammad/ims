@@ -13,7 +13,18 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('product_id');
+            $table->float('discount')->default(0);
+            $table->double('unit_price');
+            $table->integer('quantity')->default(1);
+            $table->integer('parts')->default(0);
+            $table->date('expire_date')->nullable();
+            $table->double('total_amount');
             $table->timestamps();
+
+            $table->foreign('order_id')->references('id')->on('orders')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('product_id')->references('id')->on('products')->noActionOnDelete()->cascadeOnUpdate();
         });
     }
 

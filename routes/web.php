@@ -40,4 +40,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/supplier',[OrderController::class,'newSupplierOrder']);
     Route::get('/orders/product/{code}',[OrderController::class,'getProduct']);
     Route::put('/orders/{order}',[OrderController::class,'update']);
+    Route::post('/order/items',[OrderController::class,'newItem']);
 });
