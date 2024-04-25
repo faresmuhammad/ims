@@ -87,6 +87,7 @@ Table Suppliers{
 
 Table Orders{
   id bigint [pk]
+  reference_code string [unique]
   user_id bigint [ref: > Users.id]
   supplier_id bigint [ref: > Suppliers.id]
   date timestamp
@@ -103,11 +104,13 @@ Table OrderItems{
   product_id bigint [ref: - Products.id]
   discount float [default: 0.0]
   price_per_unit double
-  quantity int
+  quantity int [default: 1]
+  parts int  [default: 0]
 }
 
 Table Stocks{
   id bigint [pk]
+  code string [unique]
   product_id bigint [ref: > Products.id]
   supplier_id bigint [ref: > Suppliers.id]
   expiration_date date [null]
