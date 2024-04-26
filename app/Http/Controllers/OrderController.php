@@ -11,21 +11,33 @@ use Inertia\Inertia;
 
 class OrderController extends Controller
 {
-    public function supplier()
+    public function show(string $reference_code, ?string $type = 'customer')
     {
-        return Inertia::render('Order/Supplier', [
-            'suppliers' => Supplier::select('id', 'name')->get()
-        ]);
+        $order = Order::where('reference_code', $reference_code)->with('items')->first();
+        if ($type == 'supplier') {
+            return Inertia::render('Order/Supplier', [
+                'order' => $order,
+                'suppliers' => Supplier::select('id', 'name')->get()
+            ]);
+        } elseif ($type == 'return') {
+            return $order;
+        } else {
+            return $order;
+        }
     }
 
-    public function newSupplierOrder()
+
+    public function newOrder(string $type)
     {
         $order = Order::create([
             'reference_code' => randomCode(),
             'user_id' => auth()->id(),
-            'supplier_id' => null
         ]);
-        return $order;
+
+        return redirect()->route('order.show', [
+            'reference_code' => $order->reference_code,
+            'type' => $type
+        ]);
     }
 
     public function update(Order $order, Request $request)

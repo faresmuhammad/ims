@@ -20,25 +20,18 @@ import OrderLayout from '../../Layouts/OrderLayout.vue';
 import axios from 'axios';
 
 const props = defineProps({
+    order: Object,
     suppliers: Object,
 });
 
 const selectedSupplier = ref(null)
-const order = ref(null)
-onMounted(() => {
-    axios.post('/orders/supplier', {})
-        .then((response) => {
-            console.log(response.data)
-            order.value = response.data
-        })
-})
 
 const updateSupplierOfOrder = () => {
-    router.put('/orders/' + order.value.id, {
+    router.put('/orders/' + props.order.id, {
         supplier_id: selectedSupplier.value
     }, {
         onSuccess: (page) => {
-            console.log(page) 
+            console.log(page)
         }
     })
 }

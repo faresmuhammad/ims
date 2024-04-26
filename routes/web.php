@@ -36,9 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class)->except(['create', 'edit']);
     Route::post('products/upload',[ProductController::class,'import']);
 
-    Route::get('/orders/supplier',[OrderController::class,'supplier']);
-    Route::post('/orders/supplier',[OrderController::class,'newSupplierOrder']);
+    Route::post('/orders/new/{type?}',[OrderController::class,'newOrder'])->name('order.new');
+    Route::get('/orders/{reference_code}/{type?}',[OrderController::class,'show'])->name('order.show');
     Route::get('/orders/product/{code}',[OrderController::class,'getProduct']);
     Route::put('/orders/{order}',[OrderController::class,'update']);
+    
     Route::post('/order/items',[OrderController::class,'newItem']);
 });
