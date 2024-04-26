@@ -26,6 +26,7 @@ const props = defineProps({
 
 const selectedSupplier = ref(null)
 
+
 const updateSupplierOfOrder = () => {
     router.put('/orders/' + props.order.id, {
         supplier_id: selectedSupplier.value

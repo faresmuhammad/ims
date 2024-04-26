@@ -52,14 +52,9 @@ class OrderController extends Controller
         $request->session()->flash('message', 'Order updated successfully');
     }
 
-    public function getProduct($code)
-    {
-        $product = Product::where('code', $code)->first();
 
-        return $product;
-    }
 
-    public function newItem(Request $request)
+    public function newItem(Order $order, Request $request)
     {
         $item = OrderItem::create([
             'order_id' => $request->order_id,
@@ -70,6 +65,40 @@ class OrderController extends Controller
             'discount' => $request->discount,
             'total_amount' => $request->total_amount
         ]);
-        return $item;
+        return response()->json([
+            'item' => $item->with(['product'])->first(),
+            'items' => $order->items()->with([
+                'product' => function ($query) {
+                    $query->select('id', 'name', 'code', 'price');
+                }
+            ])->get()
+        ]);
+    }
+
+    public function items(Order $order)
+    {
+        $items = $order->items()->with('product')->get();
+        return $items;
+    }
+
+    public function updateItem(OrderItem $item, Request $request)
+    {
+        $item->update([
+            'product_id' => $request->product_id ?? $item->product_id,
+            'quantity' => $request->quantity ?? $item->quantity,
+            'parts' => $request->parts ?? $item->parts,
+            'unit_price' => $request->unit_price ?? $item->unit_price,
+            'discount' => $request->discount ?? $item->discount,
+            'total_amount' => $request->total_amount ?? $item->total_amount,
+            'expire_date' => $request->expire_date ?? $item->expire_date,
+        ]);
+        $request->session()->flash('severity', 'success');
+        $request->session()->flash('message', 'Item was updated successfully');
+    }
+
+    public function deleteItem(OrderItem $item,Request $request)
+    {
+        $item->delete();
+
     }
 }

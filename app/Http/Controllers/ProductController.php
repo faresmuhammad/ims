@@ -102,4 +102,9 @@ class ProductController extends Controller
     {
         Excel::import(new ProductsImport(), $request->file('products'));
     }
+
+    public function getProduct(Product $product)
+    {
+        return $product;
+    }
 }

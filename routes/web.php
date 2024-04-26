@@ -36,10 +36,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class)->except(['create', 'edit']);
     Route::post('products/upload',[ProductController::class,'import']);
 
+    //Placing Order
     Route::post('/orders/new/{type?}',[OrderController::class,'newOrder'])->name('order.new');
     Route::get('/orders/{reference_code}/{type?}',[OrderController::class,'show'])->name('order.show');
-    Route::get('/orders/product/{code}',[OrderController::class,'getProduct']);
+    Route::get('/product/{product:code}',[ProductController::class,'getProduct']);
     Route::put('/orders/{order}',[OrderController::class,'update']);
-    
-    Route::post('/order/items',[OrderController::class,'newItem']);
+
+    Route::post('/order/{order:reference_code}/items',[OrderController::class,'newItem']);
+    Route::get('/order/{order:reference_code}/items',[OrderController::class,'items']);
+    Route::put('/order/item/{item}',[OrderController::class,'updateItem']);
+    Route::delete('/order/item/{item}',[OrderController::class,'deleteItem']);
 });
