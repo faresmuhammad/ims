@@ -14,8 +14,8 @@
             <!-- Show created since [time] -->
 
             <!-- Show updated since [time] -->
-            <!-- Show a status tag to indicate completed or not -->
         </div>
+            <Tag :value="order.completed ? 'Completed' : 'Incomplete'" :severity="order.completed ? 'success' : 'warning'" :icon="order.completed ? 'pi pi-check' : 'pi pi-times'"/>
         <!-- Table of order items -->
         <DataTable v-model:selection="selectedItem" selectionMode="single" :value="items" stripedRows showGridlines
             editMode="cell" @cell-edit-complete="updateItem" @cell-edit-init="beginEdit"
