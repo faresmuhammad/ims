@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+
 
 if (!function_exists('randomCode')) {
     function randomCode($length = 10)
@@ -16,3 +18,23 @@ if (!function_exists('randomCode')) {
     }
 }
 
+if (!function_exists('convertStringToDatemmyyyy')) {
+    function convertStringToDatemmyyyy(string $string)
+    {
+        $dateParts = explode('/', $string);
+        $month = $dateParts[0];
+        $year = $dateParts[1];
+        $date = Carbon::createFromDate($year, $month, 1);
+
+        return $date;
+    }
+}
+
+if (!function_exists('formatCarbonDate')) {
+    function formatCarbonDate(?string $date, $format = 'm/Y')
+    {
+        if ($date == null) return;
+        $carbonDate = Carbon::parse($date);
+        return $carbonDate->format($format);
+    }
+}

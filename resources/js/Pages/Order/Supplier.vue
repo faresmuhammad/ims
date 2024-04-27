@@ -9,20 +9,21 @@
             <h2>Supplier</h2>
             <Dropdown v-model="selectedSupplier" :options="suppliers" placeholder="Select a Supplier"
                 @update:modelValue="updateSupplierOfOrder" optionLabel="name" optionValue="id" />
-            <h5>{{order ? 'Order #' + order.reference_code : 'No Order'}}</h5>
+            <h5>{{ order ? 'Order #' + order.reference_code : 'No Order' }}</h5>
 
             <!-- Show created since [time] -->
 
             <!-- Show updated since [time] -->
         </div>
-            <Tag :value="order.completed ? 'Completed' : 'Incomplete'" :severity="order.completed ? 'success' : 'warning'" :icon="order.completed ? 'pi pi-check' : 'pi pi-times'"/>
+        <Tag :value="order.completed ? 'Completed' : 'Incomplete'" :severity="order.completed ? 'success' : 'warning'"
+            :icon="order.completed ? 'pi pi-check' : 'pi pi-times'" />
         <!-- Table of order items -->
         <DataTable v-model:selection="selectedItem" selectionMode="single" :value="items" stripedRows showGridlines
             editMode="cell" @cell-edit-complete="updateItem" @cell-edit-init="beginEdit"
             @keyup.ctrl.delete.exact="deleteItem">
             <template #header>
                 <div class="flex flex-wrap align-items-center justify-content-between gap-2">
-                    <span class="text-xl text-900 font-bold">{{ header }}</span>
+                    <span class="text-xl text-900 font-bold">Supplier</span>
                 </div>
             </template>
 
@@ -31,7 +32,7 @@
                     {{ data[field].code }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputText v-model="data[field].code" />
+                    <InputText v-model="data[field]" />
                 </template>
             </Column>
             <Column field="product.name" header="Name" class="col-3"></Column>
@@ -62,11 +63,11 @@
             <Column field="product.price" header="Selling Price" class="col-1"></Column>
             <Column field="expire_date" header="Exp. Date" class="col-2">
                 <template #body="{ field, data }">
-                    {{ data[field] }}
+                    {{ data[field] ? data[field] : 'Empty Exp. Date' }}
                 </template>
                 <template #editor="{ field, data }">
-                    //TODO: handle passing the date value to db
-                    <Calendar v-model="data[field]" view="month" dateFormat="mm/yy" />
+                    <InputMask id="basic" v-model="data[field]" placeholder="02/2025" mask="99/9999"
+                        slotChar="mm/yyyy" />
                 </template>
             </Column>
             <Column field="total_price" header="Total Price" class="col-1"></Column>
@@ -104,7 +105,8 @@
                         </div>
                         <div class="field col-2">
                             <label for="exp-date">Exp. Date</label>
-                            <Calendar v-model="newItem.expDate" view="month" dateFormat="mm/yy" id="exp-date" />
+                            <InputMask id="basic" v-model="newItem.expDate" placeholder="02/2025" mask="99/9999"
+                                slotChar="mm/yyyy" />
                         </div>
                         <div class="field col-1">
                             <label for="total-price">Total Price</label>
@@ -126,8 +128,6 @@ import { onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
-import { arrow } from '@popperjs/core';
-import InputNumber from 'primevue/inputnumber';
 const props = defineProps({
     order: Object,
     suppliers: Object,
@@ -146,7 +146,6 @@ const updateSupplierOfOrder = () => {
         }
     })
 }
-//TODO: handle calendar input data
 //TODO: handle errors feedback for:
 //  - no product found
 //  - available quantity in db
@@ -185,7 +184,7 @@ onMounted(() => {
 const getItems = () => {
     axios.get('/order/' + props.order.reference_code + '/items')
         .then((response) => {
-            items.value = response.data
+            items.value = response.data.data
         })
 }
 const getProduct = async (status) => {
@@ -247,7 +246,7 @@ const beginEdit = (event) => {
     const item = event.data
     current = {
         id: item.id,
-        product_id: item.product_id,
+        product_id: item.product.id,
         code: item.product.code,
         name: item.product.name,
         quantity: item.quantity,
@@ -261,6 +260,7 @@ const beginEdit = (event) => {
 
 const updateItem = async (event) => {
 
+    console.log(current.id)
     if (event.field === 'product') {
         current.code = event.newData.product.code
         const response = await axios.get('/product/' + current.code)
@@ -273,7 +273,7 @@ const updateItem = async (event) => {
     if (event.field === 'quantity') current.quantity = event.newData.quantity;
     if (event.field === 'parts') current.parts = event.newData.parts;
     if (event.field === 'discount') current.discount = event.newData.discount;
-    if (event.field === 'expire_date') current.expDate = event.newData.expDate;
+    if (event.field === 'expire_date') current.expDate = event.newData.expire_date;
 
 
     router.put('/order/item/' + current.id, {
@@ -304,6 +304,13 @@ const deleteItem = () => {
     } else {
         toast.add({ severity: "error", summary: "Please, select an item to delete" })
     }
+}
+
+const completeOrder = () => {
+    //loop over the items
+    //prepare stock object
+    //send create stock requests
+    //update order to completed
 }
 
 </script>

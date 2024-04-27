@@ -113,7 +113,7 @@ Table Stocks{
   code string [unique]
   product_id bigint [ref: > Products.id]
   supplier_id bigint [ref: > Suppliers.id]
-  expiration_date date [null]
+  expire_date date [null]
   original_quantity int
   quantity_in_stock int
   price double

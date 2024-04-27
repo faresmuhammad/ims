@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrderItemResource;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -63,7 +64,8 @@ class OrderController extends Controller
             'parts' => $request->parts,
             'unit_price' => $request->unit_price,
             'discount' => $request->discount,
-            'total_amount' => $request->total_amount
+            'total_amount' => $request->total_amount,
+            'expire_date' => convertStringToDatemmyyyy($request->expire_date)
         ]);
         return response()->json([
             'item' => $item->with(['product'])->first(),
@@ -77,8 +79,8 @@ class OrderController extends Controller
 
     public function items(Order $order)
     {
-        $items = $order->items()->with('product')->get();
-        return $items;
+        $items = $order->items;
+        return OrderItemResource::collection($items);
     }
 
     public function updateItem(OrderItem $item, Request $request)
@@ -90,13 +92,13 @@ class OrderController extends Controller
             'unit_price' => $request->unit_price ?? $item->unit_price,
             'discount' => $request->discount ?? $item->discount,
             'total_amount' => $request->total_amount ?? $item->total_amount,
-            'expire_date' => $request->expire_date ?? $item->expire_date,
+            'expire_date' => convertStringToDatemmyyyy($request->expire_date) ?? $item->expire_date,
         ]);
         $request->session()->flash('severity', 'success');
         $request->session()->flash('message', 'Item was updated successfully');
     }
 
-    public function deleteItem(OrderItem $item,Request $request)
+    public function deleteItem(OrderItem $item, Request $request)
     {
         $item->delete();
 
