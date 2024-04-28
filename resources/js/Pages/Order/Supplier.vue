@@ -12,7 +12,16 @@
             <h5>{{ order ? 'Order #' + order.reference_code : 'No Order' }}</h5>
 
             <!-- Show created since [time] -->
+            <!--  -->
+            <span>Created at: <Inplace>
+                    <template #display>
+                        {{ formatTimeSince(order.created_at) }}
+                    </template>
+                    <template #content>
 
+                        {{ formatDateTime(order.created_at) }}
+                    </template>
+                </Inplace></span>
             <!-- Show updated since [time] -->
         </div>
         <Tag :value="order.completed ? 'Completed' : 'Incomplete'" :severity="order.completed ? 'success' : 'warning'"
@@ -118,6 +127,10 @@
         </DataTable>
         <!-- Total Price -->
         <!-- Save and cancel buttons -->
+        <div class="flex justify-content-end">
+            <Button label="Cancel" outlined severity="danger" />
+            <Button label="Save" class="mx-2" severity="success" @click="completeOrder" />
+        </div>
     </div>
 </template>
 
@@ -134,8 +147,7 @@ const props = defineProps({
 })
 const toast = useToast();
 
-const selectedSupplier = ref(null)
-//TODO: create stocks of order items 
+const selectedSupplier = ref(props.order.supplier_id)
 
 const updateSupplierOfOrder = () => {
     router.put('/orders/' + props.order.id, {
@@ -308,9 +320,45 @@ const deleteItem = () => {
 
 const completeOrder = () => {
     //loop over the items
-    //prepare stock object
+    items.value.forEach(item => {
+        //prepare stock object
+        const stock = {
+            product_id: item.product.id,
+            supplier_id: selectedSupplier.value,
+            quantity: item.quantity,
+            parts: item.parts,
+            price: item.unit_price,
+            discount: item.discount,
+            expire_date: item.expire_date
+        }
+        console.log(stock);
+    });
     //send create stock requests
     //update order to completed
 }
 
+const formatTimeSince = (datetime) => {
+
+    const date = new Date(datetime);
+    const diff = new Date() - date
+    const minutes = Math.floor(diff / (1000 * 60))
+    const hours = Math.floor(diff / (1000 * 60 * 60))
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const weeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
+    const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30))
+    const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365))
+    console.log('time interval working', diff);
+    return years < 1 ? months < 1 ? weeks < 1 ? days == 1 ? 'Yesterday' : days < 1 ? hours < 1 ? minutes < 1 ? 'Just Now' : `${minutes} minutes ago` : `${hours} hours ago` : `${days} days ago` : `${weeks} weeks ago` : `${months} months ago` : `${years} years ago`
+}
+
+const formatDateTime = (datetime) => {
+    const date = new Date(datetime)
+    return date.toLocaleString()
+}
+//TODO: return the new value periodically
+//this executed every second but not return the text into html
+// if (new Date(props.order.created_at).toDateString() === new Date().toDateString()) {
+    
+//     setInterval(formatTimeSince, 1000);
+// }
 </script>
