@@ -19,6 +19,7 @@ const model = ref([
                 ]
             },
             { label: 'Statistics', icon: 'pi pi-fw pi-chart-bar', to: '' },
+            { label: 'Shifts', icon: 'pi pi-fw pi-ticket', to: '/shifts' },
             { label: 'Settings', icon: 'pi pi-fw pi-cog', to: '' },
 
         ]

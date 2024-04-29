@@ -163,11 +163,10 @@ Table Notes{
 
 Table Shifts{
     id bigint [pk]
-    start_date date [not null, note: "Default value is the current date"]
-    start_time time [not null, note: "Default value is the current time"]
-    end_date date [null, default: null]
-    end_time time [null]
+    start datetime [not null, note: "Default value is the current datetime"]
+    end datetime [null, default: null]
     expected_amount double [null]
     real_amount double [null]
     difference double [null]
+    user_id bigint [ref: > Users.id]
 }

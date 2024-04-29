@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Inertia\Inertia;
@@ -34,16 +35,23 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
     Route::resource('suppliers', SupplierController::class)->except(['create', 'show', 'edit']);
     Route::resource('products', ProductController::class)->except(['create', 'edit']);
-    Route::post('products/upload',[ProductController::class,'import']);
+    Route::post('products/upload', [ProductController::class, 'import']);
 
     //Placing Order
-    Route::post('/orders/new/{type?}',[OrderController::class,'newOrder'])->name('order.new');
-    Route::get('/orders/{reference_code}/{type?}',[OrderController::class,'show'])->name('order.show');
-    Route::get('/product/{product:code}',[ProductController::class,'getProduct']);
-    Route::put('/orders/{order}',[OrderController::class,'update']);
+    Route::post('/orders/new/{type?}', [OrderController::class, 'newOrder'])->name('order.new');
+    Route::get('/orders/{reference_code}/{type?}', [OrderController::class, 'show'])->name('order.show');
+    Route::get('/product/{product:code}', [ProductController::class, 'getProduct']);
+    Route::put('/orders/{order}', [OrderController::class, 'update']);
 
-    Route::post('/order/{order:reference_code}/items',[OrderController::class,'newItem']);
-    Route::get('/order/{order:reference_code}/items',[OrderController::class,'items']);
-    Route::put('/order/item/{item}',[OrderController::class,'updateItem']);
-    Route::delete('/order/item/{item}',[OrderController::class,'deleteItem']);
+    Route::post('/order/{order:reference_code}/items', [OrderController::class, 'newItem']);
+    Route::get('/order/{order:reference_code}/items', [OrderController::class, 'items']);
+    Route::put('/order/item/{item}', [OrderController::class, 'updateItem']);
+    Route::delete('/order/item/{item}', [OrderController::class, 'deleteItem']);
+
+    //Shifts
+    Route::get('shifts',[ShiftController::class,'index']);
+    Route::post('shift/start', [ShiftController::class, 'start']);
+    Route::put('shift/end', [ShiftController::class, 'end']);
+
 });
+
