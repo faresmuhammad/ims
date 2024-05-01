@@ -145,6 +145,7 @@ import { onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
+import { formatTimeSince,formatDateTime } from '@/helpers';
 const props = defineProps({
     order: Object,
     suppliers: Object,
@@ -355,24 +356,7 @@ const completeOrder = () => {
     //update order to completed
 }
 
-const formatTimeSince = (datetime) => {
 
-    const date = new Date(datetime);
-    const diff = new Date() - date
-    const minutes = Math.floor(diff / (1000 * 60))
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-    const weeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
-    const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30))
-    const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365))
-    const formatted = years < 1 ? months < 1 ? weeks < 1 ? days == 1 ? 'Yesterday' : days < 1 ? hours < 1 ? minutes < 1 ? 'Just Now' : `${minutes} minutes ago` : `${hours} hours ago` : `${days} days ago` : `${weeks} weeks ago` : `${months} months ago` : `${years} years ago`;
-    return formatted;
-}
-
-const formatDateTime = (datetime) => {
-    const date = new Date(datetime)
-    return date.toLocaleString()
-}
 const formattedTimeSince = ref(formatTimeSince(props.order.created_at))
 
 if (new Date(props.order.created_at).toDateString() === new Date().toDateString()) {
