@@ -16,6 +16,8 @@
                     <!-- TODO: Show Product Details code, name, category, description, price, stockoffset -->
                     <!-- TODO: Prepare stocks seeder and design a scenario-->
 
+                    <!-- TODO: update product price from here, update all stocks price if they have the same price and return warning if they have multiple prices to update them from stocks tab -->
+
                     <ul class="list-none p-0 m-0 border-top-1 border-300">
                         <info-item label="Code" :value="product.code" />
                         <info-item label="Name" :value="product.name" />
@@ -33,6 +35,7 @@
                 </TabPanel>
             </TabView>
 
+            <!-- TODO: add parts per unit field -->
             <Dialog v-model:visible="editDialog" header="Product Information" :style="{ width: '450px' }"
                 class="p-fluid">
                 <div class="field">

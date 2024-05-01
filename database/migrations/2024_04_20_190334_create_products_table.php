@@ -25,6 +25,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->double('price');
             $table->integer('stock_offset')->default(0);
+            $table->integer('parts_per_unit')->nullable();
             $table->timestamps();
         });
     }

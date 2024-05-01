@@ -9,13 +9,14 @@
                 <Button v-if="activeShift" label="End Shift" severity="danger" @click="endShift" />
                 <Button v-else label="Start Shift" @click="startShift" />
             </div>
-            <DataTable :value="shifts.data" showGridlines stripedRows editMode="cell"
+            <DataTable :value="shifts" showGridlines stripedRows editMode="cell"
                 @cell-edit-init="(event) => { if (event.field === 'realAmount') moneyCalcDialog = true; }"
                 @cell-edit-complete="updateShift" :rowClass="activeRow">
                 <Column field="startDate" header="Start Date" class="text-center" />
                 <Column field="startTime" header="Start Time" class="text-center" />
                 <Column field="endDate" header="End Date" class="text-center" />
                 <Column field="endTime" header="End Time" class="text-center" />
+                <!-- TODO: blur if not admin -->
                 <Column field="expectedAmount" header="Expected Amount" class="text-center">
                     <template #body="{ data, field }">
                         <!-- format this to money format -->
@@ -32,6 +33,7 @@
                         {{ data[field] }}
                     </template>
                 </Column>
+                <!-- TODO: blur if not admin -->
                 <Column field="difference" header="Difference" class="text-center" />
                 <Column field="user" header="User" class="text-center" />
             </DataTable>

@@ -18,8 +18,9 @@ return new class extends Migration {
             $table->integer('available_parts')->default(0);
             $table->integer('sold_quantity')->default(0);
             $table->integer('sold_parts')->default(0);
-            $table->integer('parts_per_unit');
+            $table->integer('parts_per_unit')->nullable();
             $table->float('discount')->default(0);
+            $table->float('discount_limit')->default(0);
             $table->date('expire_date')->nullable();
             $table->double('price');
             $table->unsignedBigInteger('product_id');

@@ -121,6 +121,7 @@ Table Stocks{
   sold_parts int
   parts_per_unit int
   discount float
+  discount_limit float
   price double
 }
 //Questions:

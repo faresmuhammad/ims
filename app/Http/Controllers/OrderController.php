@@ -65,7 +65,7 @@ class OrderController extends Controller
             'unit_price' => $request->unit_price,
             'discount' => $request->discount,
             'total_amount' => $request->total_amount,
-            'expire_date' => convertStringToDatemmyyyy($request->expire_date)
+            'expire_date' => $request->expire_date ? convertStringToDatemmyyyy($request->expire_date) : null
         ]);
         return response()->json([
             'item' => $item->with(['product'])->first(),
@@ -92,7 +92,7 @@ class OrderController extends Controller
             'unit_price' => $request->unit_price ?? $item->unit_price,
             'discount' => $request->discount ?? $item->discount,
             'total_amount' => $request->total_amount ?? $item->total_amount,
-            'expire_date' => convertStringToDatemmyyyy($request->expire_date) ?? $item->expire_date,
+            'expire_date' => $request->expire_date ? convertStringToDatemmyyyy($request->expire_date) : $item->expire_date,
         ]);
         $request->session()->flash('severity', 'success');
         $request->session()->flash('message', 'Item was updated successfully');

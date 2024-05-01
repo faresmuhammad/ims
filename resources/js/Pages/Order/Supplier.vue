@@ -15,7 +15,8 @@
             <!--  -->
             <span>Created at: <Inplace>
                     <template #display>
-                        {{ formatTimeSince(order.created_at) }}
+                        {{ formattedTimeSince }}
+                        {{ console.log(formattedTimeSince) }}
                     </template>
                     <template #content>
 
@@ -61,6 +62,7 @@
                     <InputNumber v-model="data[field]" inputId="integer" />
                 </template>
             </Column>
+            <Column field="product.price" header="Selling Price" class="col-1"></Column>
             <Column field="discount" header="Discount" class="col-1">
                 <template #body="{ field, data }">
                     %{{ data[field] }}
@@ -69,7 +71,6 @@
                     <InputNumber v-model="data[field]" inputId="percent" prefix="%" :min="0" :max="100" />
                 </template>
             </Column>
-            <Column field="product.price" header="Selling Price" class="col-1"></Column>
             <Column field="expire_date" header="Exp. Date" class="col-2">
                 <template #body="{ field, data }">
                     {{ data[field] ? data[field] : 'Empty Exp. Date' }}
@@ -87,6 +88,7 @@
                     style="border-color: var(--primary-color)">
 
                     <div class="formgrid grid">
+                        <!-- feedback: product not found -->
                         <div class="field col-2">
                             <label for="code">Code</label>
                             <InputText v-model="newItem.code" class="w-full" id="code" />
@@ -104,15 +106,17 @@
                             <InputNumber v-model="newItem.parts" class="w-full" id="parts" inputId="integer" />
                         </div>
                         <div class="field col-1">
+                            <label for="selling-price">Selling Price</label>
+                            <InputText v-model="newItem.unit_price" class="w-full" id="selling-price" />
+                        </div>
+                        <div class="field col-1">
                             <label for="discount">Discount</label>
                             <InputNumber v-model="newItem.discount" class="w-full" id="discount" inputId="percent"
                                 prefix="%" :min="0" :max="100" />
                         </div>
-                        <div class="field col-1">
-                            <label for="selling-price">Selling Price</label>
-                            <InputText v-model="newItem.unit_price" class="w-full" id="selling-price" />
-                        </div>
                         <div class="field col-2">
+                            <!-- feedback: prevent past -->
+                            <!-- feedback: warn if it's near -->
                             <label for="exp-date">Exp. Date</label>
                             <InputMask id="basic" v-model="newItem.expDate" placeholder="02/2025" mask="99/9999"
                                 slotChar="mm/yyyy" />
@@ -127,7 +131,7 @@
         </DataTable>
         <!-- Total Price -->
         <!-- Save and cancel buttons -->
-        <div class="flex justify-content-end">
+        <div :class="order.completed ? 'hidden' : 'flex justify-content-end'">
             <Button label="Cancel" outlined severity="danger" />
             <Button label="Save" class="mx-2" severity="success" @click="completeOrder" />
         </div>
@@ -196,7 +200,7 @@ onMounted(() => {
 const getItems = () => {
     axios.get('/order/' + props.order.reference_code + '/items')
         .then((response) => {
-            items.value = response.data.data
+            items.value = response.data
         })
 }
 const getProduct = async (status) => {
@@ -221,7 +225,7 @@ const getProduct = async (status) => {
 
     }
 }
-
+//FIXME: function not called
 const submitItem = () => {
     axios.post('/order/' + props.order.reference_code + '/items', {
         order_id: props.order.id,
@@ -320,6 +324,7 @@ const deleteItem = () => {
 
 const completeOrder = () => {
     //loop over the items
+    const stocks = []
     items.value.forEach(item => {
         //prepare stock object
         const stock = {
@@ -329,10 +334,23 @@ const completeOrder = () => {
             parts: item.parts,
             price: item.unit_price,
             discount: item.discount,
+            discount_limit: item.discount, //TODO: add discount limit input
             expire_date: item.expire_date
         }
-        console.log(stock);
+
+        stocks.push(stock)
     });
+    //TODO:: handle validation flash errors
+    axios.post('/stocks', {
+        stocks: stocks,
+        order_id: props.order.id
+    }).then((res) => {
+        console.log("stocks added", res.data);
+
+    }).catch((error) => {
+
+        // console.log(error);
+    })
     //send create stock requests
     //update order to completed
 }
@@ -347,18 +365,24 @@ const formatTimeSince = (datetime) => {
     const weeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
     const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30))
     const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365))
-    console.log('time interval working', diff);
-    return years < 1 ? months < 1 ? weeks < 1 ? days == 1 ? 'Yesterday' : days < 1 ? hours < 1 ? minutes < 1 ? 'Just Now' : `${minutes} minutes ago` : `${hours} hours ago` : `${days} days ago` : `${weeks} weeks ago` : `${months} months ago` : `${years} years ago`
+    const formatted = years < 1 ? months < 1 ? weeks < 1 ? days == 1 ? 'Yesterday' : days < 1 ? hours < 1 ? minutes < 1 ? 'Just Now' : `${minutes} minutes ago` : `${hours} hours ago` : `${days} days ago` : `${weeks} weeks ago` : `${months} months ago` : `${years} years ago`;
+    return formatted;
 }
 
 const formatDateTime = (datetime) => {
     const date = new Date(datetime)
     return date.toLocaleString()
 }
-//TODO: return the new value periodically
-//this executed every second but not return the text into html
-// if (new Date(props.order.created_at).toDateString() === new Date().toDateString()) {
-    
-//     setInterval(formatTimeSince, 1000);
-// }
+const formattedTimeSince = ref(formatTimeSince(props.order.created_at))
+
+if (new Date(props.order.created_at).toDateString() === new Date().toDateString()) {
+
+    setInterval(() => {
+        formattedTimeSince.value = formatTimeSince(props.order.created_at);
+        console.log(formattedTimeSince.value)
+    }, 1000 * 60)
+} else {
+
+    formattedTimeSince.value = formatTimeSince(props.order.created_at);
+}
 </script>

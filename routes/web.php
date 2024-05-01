@@ -1,13 +1,14 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ShiftController;
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\UserController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +48,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/order/{order:reference_code}/items', [OrderController::class, 'items']);
     Route::put('/order/item/{item}', [OrderController::class, 'updateItem']);
     Route::delete('/order/item/{item}', [OrderController::class, 'deleteItem']);
+
+    //Stocks
+    Route::post('/stocks', [StockController::class, 'store']);
 
     //Shifts
     Route::get('shifts',[ShiftController::class,'index']);

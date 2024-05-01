@@ -45,6 +45,7 @@
                         </template>
                     </DataTable>
 
+                    <!-- TODO: add parts per unit field -->
                     <Dialog v-model:visible="newProductDialog" header="Product Information" :style="{ width: '450px' }"
                         class="p-fluid">
                         <div class="field">
