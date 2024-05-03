@@ -12,7 +12,6 @@
             <h5>{{ order ? 'Order #' + order.reference_code : 'No Order' }}</h5>
 
             <!-- Show created since [time] -->
-            <!--  -->
             <span>Created at: <Inplace>
                     <template #display>
                         {{ formattedTimeSince }}
@@ -62,7 +61,14 @@
                     <InputNumber v-model="data[field]" inputId="integer" />
                 </template>
             </Column>
-            <Column field="product.price" header="Selling Price" class="col-1"></Column>
+            <Column field="unit_price" header="Selling Price" class="col-1">
+                <template #body={data,field}>
+                    EGP {{data[field]}}
+                </template>
+                <template #editor={data,field}>
+                    <InputNumber v-model="data[field]" mode="currency" currency="EGP"/>
+                </template>
+            </Column>
             <Column field="discount" header="Discount" class="col-1">
                 <template #body="{ field, data }">
                     %{{ data[field] }}
@@ -80,11 +86,15 @@
                         slotChar="mm/yyyy" />
                 </template>
             </Column>
-            <Column field="total_price" header="Total Price" class="col-1"></Column>
+            <Column field="total_amount" header="Total Price" class="col-1">
+            <template #body={data,field}>
+                EGP {{data[field].toFixed(2)}}
+            </template>
+            </Column>
 
 
             <template #footer>
-                <div @keyup.ctrl.enter="submitItem" @keyup.enter.exact="getProduct('new')" class="card p-3"
+                <div @keydown.ctrl.enter="submitItem" @keyup.enter.exact="getProduct('new')" class="card p-3"
                     style="border-color: var(--primary-color)">
 
                     <div class="formgrid grid">
@@ -121,15 +131,16 @@
                             <InputMask id="basic" v-model="newItem.expDate" placeholder="02/2025" mask="99/9999"
                                 slotChar="mm/yyyy" />
                         </div>
-                        <div class="field col-1">
+                        <!-- <div class="field col-1">
                             <label for="total-price">Total Price</label>
                             <InputText v-model="newItem.totalPrice" class="w-full" id="total-price" />
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </template>
         </DataTable>
         <!-- Total Price -->
+        <h5>Total Price: {{totalOrderPrice}}</h5>
         <!-- Save and cancel buttons -->
         <div :class="order.completed ? 'hidden' : 'flex justify-content-end'">
             <Button label="Cancel" outlined severity="danger" />
@@ -145,7 +156,8 @@ import { onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
-import { formatTimeSince,formatDateTime } from '@/helpers';
+import { calculateTotalOrderPrice, calculateItemTotalPrice,formatTimeSince,formatDateTime } from '@/helpers';
+
 const props = defineProps({
     order: Object,
     suppliers: Object,
@@ -176,7 +188,8 @@ const newItem = reactive({
     parts: 0,
     discount: 0,
     unit_price: 0,
-    totalPrice: 0,
+    parts_per_unit: null,
+    // totalPrice: 0,
     expDate: ''
 })
 
@@ -189,11 +202,13 @@ let current = reactive({
     parts: 0,
     discount: 0,
     unit_price: 0,
+    parts_per_unit: null,
     totalPrice: 0,
     expDate: ''
 })
 
 const items = ref(null)
+const totalOrderPrice = ref(0)
 onMounted(() => {
     getItems()
 })
@@ -202,6 +217,8 @@ const getItems = () => {
     axios.get('/order/' + props.order.reference_code + '/items')
         .then((response) => {
             items.value = response.data
+            totalOrderPrice.value = calculateTotalOrderPrice(items.value)
+            console.log(items.value)
         })
 }
 const getProduct = async (status) => {
@@ -213,21 +230,23 @@ const getProduct = async (status) => {
                 newItem.product_id = product.id
                 newItem.name = product.name
                 newItem.unit_price = product.price
+                newItem.parts_per_unit = product.parts_per_unit
             }).catch((e) => {
                 console.log(e)
             })
-    } else {
+        } else {
         const response = await axios.get('/product/' + current.code)
         const product = response.data
         current.product_id = product.id
         current.name = product.name
         current.unit_price = product.price
+        current.parts_per_unit = product.parts_per_unit
         console.log(current)
 
     }
 }
-//FIXME: function not called
 const submitItem = () => {
+    console.log(newItem);
     axios.post('/order/' + props.order.reference_code + '/items', {
         order_id: props.order.id,
         product_id: newItem.product_id,
@@ -235,11 +254,19 @@ const submitItem = () => {
         parts: newItem.parts,
         discount: newItem.discount,
         unit_price: newItem.unit_price,
-        total_amount: newItem.totalPrice,
+        total_amount: calculateItemTotalPrice(
+            newItem.unit_price,
+            newItem.quantity,
+            newItem.parts,
+            newItem.parts_per_unit,
+            newItem.discount
+        ),
         expire_date: newItem.expDate
     })
-        .then((response) => {
-            items.value = response.data.items
+    .then((response) => {
+        items.value = response.data.items
+        totalOrderPrice.value = calculateTotalOrderPrice(items.value)
+
             resetForm()
         })
         .catch((e) => {
@@ -251,11 +278,11 @@ const resetForm = () => {
     newItem.product_id = null
     newItem.code = ''
     newItem.name = ''
-    newItem.quantity = 0
+    newItem.quantity = 1
     newItem.parts = 0
     newItem.discount = 0
     newItem.unit_price = 0
-    newItem.totalPrice = 0
+    // newItem.totalPrice = 0
     newItem.expDate = ''
 }
 
@@ -285,10 +312,12 @@ const updateItem = async (event) => {
         current.product_id = product.id
         current.name = product.name
         current.unit_price = product.price
+        current.parts_per_unit = product.parts_per_unit
 
     }
     if (event.field === 'quantity') current.quantity = event.newData.quantity;
     if (event.field === 'parts') current.parts = event.newData.parts;
+    if (event.field === 'unit_price') current.unit_price = event.newData.unit_price;
     if (event.field === 'discount') current.discount = event.newData.discount;
     if (event.field === 'expire_date') current.expDate = event.newData.expire_date;
 
@@ -299,7 +328,13 @@ const updateItem = async (event) => {
         parts: current.parts,
         unit_price: current.unit_price,
         discount: current.discount,
-        total_amount: current.totalPrice,
+        total_amount: calculateItemTotalPrice(
+            current.unit_price,
+            current.quantity,
+            current.parts,
+            current.parts_per_unit,
+            current.discount
+        ),
         expire_date: current.expDate,
     }, {
         onSuccess: (pageObj) => {
