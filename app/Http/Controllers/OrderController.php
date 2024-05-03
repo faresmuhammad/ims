@@ -64,6 +64,7 @@ class OrderController extends Controller
             'parts' => $request->parts,
             'unit_price' => $request->unit_price,
             'discount' => $request->discount,
+            'discount_limit' => $request->discount_limit,
             'total_amount' => $request->total_amount,
             'expire_date' => $request->expire_date ? convertStringToDatemmyyyy($request->expire_date) : null
         ]);
@@ -91,6 +92,7 @@ class OrderController extends Controller
             'parts' => $request->parts ?? $item->parts,
             'unit_price' => $request->unit_price ?? $item->unit_price,
             'discount' => $request->discount ?? $item->discount,
+            'discount_limit' => $request->discount_limit ?? $item->discount_limit,
             'total_amount' => $request->total_amount ?? $item->total_amount,
             'expire_date' => $request->expire_date ? convertStringToDatemmyyyy($request->expire_date) : $item->expire_date,
         ]);

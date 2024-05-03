@@ -23,7 +23,7 @@ class OrderItemResource extends JsonResource
             'quantity' => $this->quantity,
             'parts' => $this->parts,
             'discount' => $this->discount,
-
+            'discount_limit' => $this->discount_limit,
             'unit_price' => $this->unit_price,
             'total_amount' => $this->total_amount,
             'expire_date' => formatCarbonDate($this->expire_date),

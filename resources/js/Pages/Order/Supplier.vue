@@ -24,8 +24,8 @@
                 </Inplace></span>
             <!-- Show updated since [time] -->
         </div>
-        <Tag :value="order.completed ? 'Completed' : 'Incomplete'" :severity="order.completed ? 'success' : 'warning'"
-            :icon="order.completed ? 'pi pi-check' : 'pi pi-times'" />
+        <Tag :value="order.completed ? 'Completed' : 'Incomplete'" :severity="order.completed ? 'success' : 'warning'" class="text-xl py-1 px-3"
+            :icon="order.completed ? 'pi pi-check text-xl' : 'pi pi-times text-xl'"  />
         <!-- Table of order items -->
         <DataTable v-model:selection="selectedItem" selectionMode="single" :value="items" stripedRows showGridlines
             editMode="cell" @cell-edit-complete="updateItem" @cell-edit-init="beginEdit"
@@ -36,7 +36,7 @@
                 </div>
             </template>
 
-            <Column field="product" key="product.code" header="Code" class="col">
+            <Column field="product" key="product.code" header="Code" class="text-center col">
                 <template #body="{ field, data }">
                     {{ data[field].code }}
                 </template>
@@ -44,8 +44,8 @@
                     <InputText v-model="data[field]" />
                 </template>
             </Column>
-            <Column field="product.name" header="Name" class="col-3"></Column>
-            <Column field="quantity" header="Quantity" class="col-1">
+            <Column field="product.name" header="Name" class="text-center col-3"></Column>
+            <Column field="quantity" header="Quantity" class="text-center col-1">
                 <template #body="{ field, data }">
                     {{ data[field] }}
                 </template>
@@ -53,7 +53,7 @@
                     <InputNumber v-model="data[field]" inputmode="integer" />
                 </template>
             </Column>
-            <Column field="parts" header="Parts" class="col-1">
+            <Column field="parts" header="Parts" class="text-center col-1">
                 <template #body="{ field, data }">
                     {{ data[field] }}
                 </template>
@@ -61,7 +61,7 @@
                     <InputNumber v-model="data[field]" inputId="integer" />
                 </template>
             </Column>
-            <Column field="unit_price" header="Selling Price" class="col-1">
+            <Column field="unit_price" header="Selling Price" class="text-center col-1">
                 <template #body={data,field}>
                     EGP {{data[field]}}
                 </template>
@@ -69,7 +69,7 @@
                     <InputNumber v-model="data[field]" mode="currency" currency="EGP"/>
                 </template>
             </Column>
-            <Column field="discount" header="Discount" class="col-1">
+            <Column field="discount" header="Discount" class="text-center col-1">
                 <template #body="{ field, data }">
                     %{{ data[field] }}
                 </template>
@@ -77,7 +77,15 @@
                     <InputNumber v-model="data[field]" inputId="percent" prefix="%" :min="0" :max="100" />
                 </template>
             </Column>
-            <Column field="expire_date" header="Exp. Date" class="col-2">
+            <Column field="discount_limit" header="Discount Limit" class="text-center col-1">
+                <template #body="{ field, data }">
+                    %{{ data[field] }}
+                </template>
+                <template #editor="{ field, data }">
+                    <InputNumber v-model="data[field]" inputId="percent" prefix="%" :min="0" :max="100" />
+                </template>
+            </Column>
+            <Column field="expire_date" header="Exp. Date" class="text-center col-2">
                 <template #body="{ field, data }">
                     {{ data[field] ? data[field] : 'Empty Exp. Date' }}
                 </template>
@@ -86,7 +94,7 @@
                         slotChar="mm/yyyy" />
                 </template>
             </Column>
-            <Column field="total_amount" header="Total Price" class="col-1">
+            <Column field="total_amount" header="Total Price" class="text-center col-1">
             <template #body={data,field}>
                 EGP {{data[field].toFixed(2)}}
             </template>
@@ -109,27 +117,32 @@
                         </div>
                         <div class="field col-1 m-0">
                             <label for="quantity">Quantity</label>
-                            <InputNumber v-model="newItem.quantity" class="w-full" id="quantity" inputId="integer" />
+                            <InputNumber v-model="newItem.quantity" inputClass="w-full" id="quantity" inputId="integer" />
                         </div>
                         <div class="field col-1">
                             <label for="parts">Parts</label>
-                            <InputNumber v-model="newItem.parts" class="w-full" id="parts" inputId="integer" />
+                            <InputNumber v-model="newItem.parts" inputClass="w-full" id="parts" inputId="integer" />
                         </div>
                         <div class="field col-1">
                             <label for="selling-price">Selling Price</label>
-                            <InputText v-model="newItem.unit_price" class="w-full" id="selling-price" />
+                            <InputNumber v-model="newItem.unit_price" inputClass="w-full" id="selling-price" mode="currency" currency="EGP"/>
                         </div>
                         <div class="field col-1">
                             <label for="discount">Discount</label>
-                            <InputNumber v-model="newItem.discount" class="w-full" id="discount" inputId="percent"
+                            <InputNumber v-model="newItem.discount" inputClass="w-full" id="discount" inputId="percent"
                                 prefix="%" :min="0" :max="100" />
                         </div>
-                        <div class="field col-2">
+                        <div class="field col-1">
+                            <label for="discount_limit">Discount Limit</label>
+                            <InputNumber v-model="newItem.discount_limit" inputClass="w-full" id="discount_limit" inputId="percent"
+                                prefix="%" :min="0" :max="100" />
+                        </div>
+                        <div class="field col-1">
                             <!-- feedback: prevent past -->
                             <!-- feedback: warn if it's near -->
                             <label for="exp-date">Exp. Date</label>
-                            <InputMask id="basic" v-model="newItem.expDate" placeholder="02/2025" mask="99/9999"
-                                slotChar="mm/yyyy" />
+                            <InputMask id="exp-date" v-model="newItem.expDate" placeholder="02/2025" mask="99/9999"
+                                slotChar="mm/yyyy" inputClass="w-full" />
                         </div>
                         <!-- <div class="field col-1">
                             <label for="total-price">Total Price</label>
@@ -187,6 +200,7 @@ const newItem = reactive({
     quantity: 1,
     parts: 0,
     discount: 0,
+    discount_limit: 0,
     unit_price: 0,
     parts_per_unit: null,
     // totalPrice: 0,
@@ -201,6 +215,7 @@ let current = reactive({
     quantity: 1,
     parts: 0,
     discount: 0,
+    discount_limit: 0,
     unit_price: 0,
     parts_per_unit: null,
     totalPrice: 0,
@@ -223,6 +238,10 @@ const getItems = () => {
 }
 const getProduct = async (status) => {
     if (status === 'new') {
+        newItem.name = ''
+        newItem.product_id = null
+        newItem.unit_price = 0
+        newItem.parts_per_unit = 0
         axios.get('/product/' + newItem.code)
             .then((response) => {
                 //TODO: check if the product exist in the order --> focus on the item to edit
@@ -253,6 +272,7 @@ const submitItem = () => {
         quantity: newItem.quantity,
         parts: newItem.parts,
         discount: newItem.discount,
+        discount_limit: newItem.discount_limit,
         unit_price: newItem.unit_price,
         total_amount: calculateItemTotalPrice(
             newItem.unit_price,
@@ -281,6 +301,7 @@ const resetForm = () => {
     newItem.quantity = 1
     newItem.parts = 0
     newItem.discount = 0
+    newItem.discount_limit = 0
     newItem.unit_price = 0
     // newItem.totalPrice = 0
     newItem.expDate = ''
@@ -296,6 +317,7 @@ const beginEdit = (event) => {
         quantity: item.quantity,
         parts: item.parts,
         discount: item.discount,
+        discount_limit: item.discount_limit,
         unit_price: item.unit_price,
         totalPrice: item.total_amount,
         expDate: item.expire_date
@@ -319,6 +341,7 @@ const updateItem = async (event) => {
     if (event.field === 'parts') current.parts = event.newData.parts;
     if (event.field === 'unit_price') current.unit_price = event.newData.unit_price;
     if (event.field === 'discount') current.discount = event.newData.discount;
+    if (event.field === 'discount_limit') current.discount_limit = event.newData.discount_limit;
     if (event.field === 'expire_date') current.expDate = event.newData.expire_date;
 
 
@@ -328,6 +351,7 @@ const updateItem = async (event) => {
         parts: current.parts,
         unit_price: current.unit_price,
         discount: current.discount,
+        discount_limit: current.discount_limit,
         total_amount: calculateItemTotalPrice(
             current.unit_price,
             current.quantity,
@@ -370,7 +394,7 @@ const completeOrder = () => {
             parts: item.parts,
             price: item.unit_price,
             discount: item.discount,
-            discount_limit: item.discount, //TODO: add discount limit input
+            discount_limit: item.discount, 
             expire_date: item.expire_date
         }
 

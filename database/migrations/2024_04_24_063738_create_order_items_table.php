@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('product_id');
             $table->float('discount')->default(0);
+            $table->float('discount_limit')->nullable();
             $table->double('unit_price');
             $table->integer('quantity')->default(1);
             $table->integer('parts')->default(0);
