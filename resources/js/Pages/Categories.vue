@@ -18,7 +18,7 @@
                         </template>
 
                     </Toolbar>
-
+                    <!-- TODO: replace data table with tree for categories and subcategories -->
                     <DataTable v-model:selection="selectedCategories" v-model:editingRows="editingRows"
                         v-model:expandedRows="expandingRows" :value="categories" editMode="row"
                         @row-edit-save="updateCategory" dataKey="id">

@@ -27,6 +27,7 @@
         <Tag :value="order.completed ? 'Completed' : 'Incomplete'" :severity="order.completed ? 'success' : 'warning'" class="text-xl py-1 px-3"
             :icon="order.completed ? 'pi pi-check text-xl' : 'pi pi-times text-xl'"  />
         <!-- Table of order items -->
+        <Toast position="top-center" group="tc" />
         <DataTable v-model:selection="selectedItem" selectionMode="single" :value="items" stripedRows showGridlines
             editMode="cell" @cell-edit-complete="updateItem" @cell-edit-init="beginEdit"
             @keyup.ctrl.delete.exact="deleteItem">
@@ -41,7 +42,7 @@
                     {{ data[field].code }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputText v-model="data[field]" />
+                    <InputText v-model="data[field].code"/>
                 </template>
             </Column>
             <Column field="product.name" header="Name" class="text-center col-3"></Column>
@@ -74,7 +75,7 @@
                     %{{ data[field] }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputId="percent" prefix="%" :min="0" :max="100" />
+                    <InputNumber v-model="data[field]" inputId="percent" prefix="%" :min="0" :max="100" @input="checkValidCurrentItem($event.value,'discount')"/>
                 </template>
             </Column>
             <Column field="discount_limit" header="Discount Limit" class="text-center col-1">
@@ -82,7 +83,10 @@
                     %{{ data[field] }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputId="percent" prefix="%" :min="0" :max="100" />
+                    <div class="flex flex-column">
+                    <InputNumber v-model="data[field]" inputId="percent" prefix="%" :min="0" :max="100" @input="checkValidCurrentItem($event.value,'discount_limit')"/>
+                    <small class="p-error">{{errorsCurrent.discountLimit}}</small>
+                    </div>
                 </template>
             </Column>
             <Column field="expire_date" header="Exp. Date" class="text-center col-2">
@@ -90,8 +94,12 @@
                     {{ data[field] ? data[field] : 'Empty Exp. Date' }}
                 </template>
                 <template #editor="{ field, data }">
+                    <div class="flex flex-column">
+
                     <InputMask id="basic" v-model="data[field]" placeholder="02/2025" mask="99/9999"
-                        slotChar="mm/yyyy" />
+                        slotChar="mm/yyyy" @update:modelValue="checkValidCurrentItem($event,'expDate')"/>
+                    <small v-if="errorsCurrent.expireDate" :class="errorsCurrent.expireDate.severity === 'error' ? 'p-error':'text-yellow-600'">{{errorsCurrent.expireDate.message}}</small>
+                    </div>
                 </template>
             </Column>
             <Column field="total_amount" header="Total Price" class="text-center col-1">
@@ -108,41 +116,66 @@
                     <div class="formgrid grid">
                         <!-- feedback: product not found -->
                         <div class="field col-2">
+                            <div class="flex flex-column gap-2">
+
                             <label for="code">Code</label>
-                            <InputText v-model="newItem.code" class="w-full" id="code" />
+                            <InputText v-model="newItem.code" class="w-full" id="code" :invalid="errorsNew.code !== null"/>
+                            <small class="p-error">{{errorsNew.code}}</small>
                         </div>
+                            </div>
                         <div class="field col-3">
+                            <div class="flex flex-column gap-2">
+
                             <label for="name">Name</label>
                             <InputText v-model="newItem.name" class="w-full" id="name" disabled />
+                            </div>
                         </div>
                         <div class="field col-1 m-0">
+                            <div class="flex flex-column gap-2">
+
                             <label for="quantity">Quantity</label>
                             <InputNumber v-model="newItem.quantity" inputClass="w-full" id="quantity" inputId="integer" />
+                            </div>
                         </div>
                         <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+
                             <label for="parts">Parts</label>
                             <InputNumber v-model="newItem.parts" inputClass="w-full" id="parts" inputId="integer" />
+                            </div>
                         </div>
                         <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+
                             <label for="selling-price">Selling Price</label>
                             <InputNumber v-model="newItem.unit_price" inputClass="w-full" id="selling-price" mode="currency" currency="EGP"/>
+                            </div>
                         </div>
                         <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+
                             <label for="discount">Discount</label>
                             <InputNumber v-model="newItem.discount" inputClass="w-full" id="discount" inputId="percent"
-                                prefix="%" :min="0" :max="100" />
+                                prefix="%" :min="0" :max="100" @input="checkValidItem($event.value,'discount')"/>
+                            </div>
                         </div>
                         <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+
                             <label for="discount_limit">Discount Limit</label>
                             <InputNumber v-model="newItem.discount_limit" inputClass="w-full" id="discount_limit" inputId="percent"
-                                prefix="%" :min="0" :max="100" />
+                                prefix="%" :min="0" :max="100" @input="checkValidItem($event.value,'discount_limit')" :invalid="errorsNew.discountLimit !== null"/>
+                            <small class="p-error">{{errorsNew.discountLimit}}</small>
+                            </div>
                         </div>
                         <div class="field col-1">
-                            <!-- feedback: prevent past -->
-                            <!-- feedback: warn if it's near -->
+                            <div class="flex flex-column gap-2">
+
                             <label for="exp-date">Exp. Date</label>
                             <InputMask id="exp-date" v-model="newItem.expDate" placeholder="02/2025" mask="99/9999"
-                                slotChar="mm/yyyy" inputClass="w-full" />
+                                slotChar="mm/yyyy" inputClass="w-full" @update:modelValue="checkValidItem($event,'expDate')" :invalid="errorsNew.expireDate != null"/>
+                                <small v-if="errorsNew.expireDate" :class="errorsNew.expireDate.severity === 'error' ? 'p-error':'text-yellow-600'">{{errorsNew.expireDate.message}}</small>
+                            </div>
                         </div>
                         <!-- <div class="field col-1">
                             <label for="total-price">Total Price</label>
@@ -222,11 +255,62 @@ let current = reactive({
     expDate: ''
 })
 
+const errorsNew = reactive({
+    code: null,
+    discountLimit:null,
+    expireDate:{
+        severity: 'error',
+        message: null
+    }
+})
+
+const errorsCurrent = reactive({
+    code: null,
+    discountLimit:null,
+    expireDate:{
+        severity: 'error',
+        message: null
+    },
+})
+
 const items = ref(null)
 const totalOrderPrice = ref(0)
 onMounted(() => {
     getItems()
 })
+
+const checkValidItem = (value,field)=>{
+    if(field === 'discount_limit')
+        errorsNew.discountLimit = value >= newItem.discount ? 'Discount limit must not reach to discount value' : null
+    else if(field === 'discount')
+        errorsNew.discountLimit = newItem.discount_limit >= value ? 'Discount limit must not reach to discount value' : null
+    else if(field === 'expDate')
+        {
+            const dateParts = value.split('/')
+            console.log(dateParts);
+            const date = new Date(Number(dateParts[1]),Number(dateParts[0]) -1,1);
+            //TODO: get the date offset from settings
+            errorsNew.expireDate = date < new Date() ? {severity: 'error', message: 'Expire date must be greater than today'} : date < new Date().setMonth(new Date().getMonth() + 6) ? {severity: 'warn', message: 'Expire Date will be reached in less than 6 months' } : null
+        }
+    console.log(errorsNew);
+
+}
+const checkValidCurrentItem = (value,field)=>{
+    if(field === 'discount_limit')
+        errorsCurrent.discountLimit = value >= current.discount ? 'Discount limit must not reach to discount value' : null
+    else if(field === 'discount')
+        errorsCurrent.discountLimit = current.discount_limit >= value ? 'Discount limit must not reach to discount value' : null
+    else if(field === 'expDate')
+        {
+            const dateParts = value.split('/')
+            console.log(dateParts);
+            const date = new Date(Number(dateParts[1]),Number(dateParts[0]) - 1, 1);
+            //TODO: get the date offset from settings
+            errorsCurrent.expireDate = date < new Date() ? {severity: 'error', message: 'Expire date must be greater than today'} : date < new Date().setMonth(new Date().getMonth() + 6) ? {severity: 'warn', message: 'Expire Date will be reached in less than 6 months' }: null
+        }
+    console.log(errorsCurrent);
+
+}
 
 const getItems = () => {
     axios.get('/order/' + props.order.reference_code + '/items')
@@ -236,14 +320,16 @@ const getItems = () => {
             console.log(items.value)
         })
 }
-const getProduct = async (status) => {
+const getProduct = (status) => {
     if (status === 'new') {
+        errorsNew.code = null
         newItem.name = ''
         newItem.product_id = null
         newItem.unit_price = 0
         newItem.parts_per_unit = 0
+
         axios.get('/product/' + newItem.code)
-            .then((response) => {
+        .then((response) => {
                 //TODO: check if the product exist in the order --> focus on the item to edit
                 const product = response.data
                 newItem.product_id = product.id
@@ -251,21 +337,32 @@ const getProduct = async (status) => {
                 newItem.unit_price = product.price
                 newItem.parts_per_unit = product.parts_per_unit
             }).catch((e) => {
-                console.log(e)
+                if(e.response.status === 404){
+                    errorsNew.code = 'Product not found'
+                }
             })
         } else {
-        const response = await axios.get('/product/' + current.code)
-        const product = response.data
-        current.product_id = product.id
-        current.name = product.name
-        current.unit_price = product.price
-        current.parts_per_unit = product.parts_per_unit
-        console.log(current)
+            errorsCurrent.code = null;
+        axios.get('/product/' + current.code)
+        .then((response)=>{
+            console.log(response);
+            const product = response.data
+            current.product_id = product.id
+            current.name = product.name
+            current.unit_price = product.price
+            current.parts_per_unit = product.parts_per_unit
+        })
+        .catch((e)=>{
+            if(e.response.status === 404){
+                    errorsCurrent.code = 'Product not found'
+                    toast.add({severity: 'error', summary: errorsCurrent.code,group:'tc',life: 3000})
+                }
+        })
 
     }
 }
 const submitItem = () => {
-    console.log(newItem);
+    if(errorsNew.code != null || errorsNew.discountLimit != null || errorsNew.expireDate != null) return;
     axios.post('/order/' + props.order.reference_code + '/items', {
         order_id: props.order.id,
         product_id: newItem.product_id,
@@ -303,11 +400,13 @@ const resetForm = () => {
     newItem.discount = 0
     newItem.discount_limit = 0
     newItem.unit_price = 0
-    // newItem.totalPrice = 0
     newItem.expDate = ''
 }
 
 const beginEdit = (event) => {
+    errorsCurrent.code = null
+    errorsCurrent.discountLimit = null
+    errorsCurrent.expireDate.message = null
     const item = event.data
     current = {
         id: item.id,
@@ -329,14 +428,9 @@ const updateItem = async (event) => {
     console.log(current.id)
     if (event.field === 'product') {
         current.code = event.newData.product.code
-        const response = await axios.get('/product/' + current.code)
-        const product = response.data
-        current.product_id = product.id
-        current.name = product.name
-        current.unit_price = product.price
-        current.parts_per_unit = product.parts_per_unit
-
+        getProduct('current')
     }
+
     if (event.field === 'quantity') current.quantity = event.newData.quantity;
     if (event.field === 'parts') current.parts = event.newData.parts;
     if (event.field === 'unit_price') current.unit_price = event.newData.unit_price;
@@ -344,8 +438,8 @@ const updateItem = async (event) => {
     if (event.field === 'discount_limit') current.discount_limit = event.newData.discount_limit;
     if (event.field === 'expire_date') current.expDate = event.newData.expire_date;
 
-
-    router.put('/order/item/' + current.id, {
+    if(!errorsCurrent.code || !errorsCurrent.discountLimit || !errorsCurrent.expireDate.message) return;
+    {router.put('/order/item/' + current.id, {
         product_id: current.product_id,
         quantity: current.quantity,
         parts: current.parts,
@@ -364,8 +458,11 @@ const updateItem = async (event) => {
         onSuccess: (pageObj) => {
             getItems()
             toast.add({ severity: pageObj.props.flash.severity, summary: pageObj.props.flash.message, life: 2000 });
+        },
+        onError:(e)=>{
+            console.log(e.response);
         }
-    })
+    })}
 }
 
 const deleteItem = () => {
