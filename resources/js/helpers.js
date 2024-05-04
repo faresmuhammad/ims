@@ -16,26 +16,3 @@ export function formatDateTime(datetime) {
     const date = new Date(datetime)
     return date.toLocaleString()
 }
-
-export function calculateItemTotalPrice(price, quantity, parts = 0, partsPerUnit = 1, discount = 0) {
-    const discountDecimal = discount / 100;
-    let totalPrice = 0;
-    if (parts == 0)
-        totalPrice = (price * quantity) * (1 - discountDecimal);
-    else {
-        const partsPerUnitChecked = partsPerUnit == null ? 1 : partsPerUnit
-        totalPrice = (price * quantity + (price / partsPerUnitChecked) * parts) * (1 - discountDecimal);
-    }
-
-
-    return totalPrice;
-}
-
-
-export function calculateTotalOrderPrice(items) {
-    let total = 0;
-    items.forEach((item) =>{
-        total += item.total_amount
-    })
-    return total
-}

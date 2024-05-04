@@ -110,7 +110,7 @@
 
 
             <template #footer>
-                <div @keydown.ctrl.enter="submitItem" @keyup.enter.exact="getProduct('new')" class="card p-3"
+                <div @keydown.ctrl.enter="submitNewItem" @keyup.enter.exact="getNewProduct" class="card p-3"
                     style="border-color: var(--primary-color)">
 
                     <div class="formgrid grid">
@@ -202,13 +202,24 @@ import { onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
-import { calculateTotalOrderPrice, calculateItemTotalPrice,formatTimeSince,formatDateTime } from '@/helpers';
+import { useOrders,calculateItemTotalPrice } from '@/composables/orders';
+import { formatDateTime } from '@/helpers';
 
 const props = defineProps({
     order: Object,
     suppliers: Object,
 })
+
+const {items, getItems, 
+    totalOrderPrice,
+     getProduct,
+     submitItem,
+     formattedTimeSince,
+     updateTodayTimeSince
+    } = useOrders(props.order)
 const toast = useToast();
+
+updateTodayTimeSince()
 
 const selectedSupplier = ref(props.order.supplier_id)
 
@@ -236,11 +247,10 @@ const newItem = reactive({
     discount_limit: 0,
     unit_price: 0,
     parts_per_unit: null,
-    // totalPrice: 0,
     expDate: ''
 })
 
-let current = reactive({
+const current = reactive({
     id: null,
     product_id: null,
     code: '',
@@ -273,12 +283,11 @@ const errorsCurrent = reactive({
     },
 })
 
-const items = ref(null)
-const totalOrderPrice = ref(0)
-onMounted(() => {
-    getItems()
-})
 
+
+
+
+//FIXME: fix when discount equal zero
 const checkValidItem = (value,field)=>{
     if(field === 'discount_limit')
         errorsNew.discountLimit = value >= newItem.discount ? 'Discount limit must not reach to discount value' : null
@@ -295,6 +304,7 @@ const checkValidItem = (value,field)=>{
     console.log(errorsNew);
 
 }
+//FIXME: fix when discount equal zero
 const checkValidCurrentItem = (value,field)=>{
     if(field === 'discount_limit')
         errorsCurrent.discountLimit = value >= current.discount ? 'Discount limit must not reach to discount value' : null
@@ -312,83 +322,21 @@ const checkValidCurrentItem = (value,field)=>{
 
 }
 
-const getItems = () => {
-    axios.get('/order/' + props.order.reference_code + '/items')
-        .then((response) => {
-            items.value = response.data
-            totalOrderPrice.value = calculateTotalOrderPrice(items.value)
-            console.log(items.value)
-        })
+
+
+const getNewProduct = async ()=>{
+    const product = (await getProduct(newItem.code)).data
+    newItem.product_id = product.id
+    newItem.name = product.name
+    newItem.unit_price = product.price
+    newItem.parts_per_unit = product.parts_per_unit
 }
-const getProduct = (status) => {
-    if (status === 'new') {
-        errorsNew.code = null
-        newItem.name = ''
-        newItem.product_id = null
-        newItem.unit_price = 0
-        newItem.parts_per_unit = 0
 
-        axios.get('/product/' + newItem.code)
-        .then((response) => {
-                //TODO: check if the product exist in the order --> focus on the item to edit
-                const product = response.data
-                newItem.product_id = product.id
-                newItem.name = product.name
-                newItem.unit_price = product.price
-                newItem.parts_per_unit = product.parts_per_unit
-            }).catch((e) => {
-                if(e.response.status === 404){
-                    errorsNew.code = 'Product not found'
-                }
-            })
-        } else {
-            errorsCurrent.code = null;
-        axios.get('/product/' + current.code)
-        .then((response)=>{
-            console.log(response);
-            const product = response.data
-            current.product_id = product.id
-            current.name = product.name
-            current.unit_price = product.price
-            current.parts_per_unit = product.parts_per_unit
-        })
-        .catch((e)=>{
-            if(e.response.status === 404){
-                    errorsCurrent.code = 'Product not found'
-                    toast.add({severity: 'error', summary: errorsCurrent.code,group:'tc',life: 3000})
-                }
-        })
 
-    }
-}
-const submitItem = () => {
-    if(errorsNew.code != null || errorsNew.discountLimit != null || errorsNew.expireDate != null) return;
-    axios.post('/order/' + props.order.reference_code + '/items', {
-        order_id: props.order.id,
-        product_id: newItem.product_id,
-        quantity: newItem.quantity,
-        parts: newItem.parts,
-        discount: newItem.discount,
-        discount_limit: newItem.discount_limit,
-        unit_price: newItem.unit_price,
-        total_amount: calculateItemTotalPrice(
-            newItem.unit_price,
-            newItem.quantity,
-            newItem.parts,
-            newItem.parts_per_unit,
-            newItem.discount
-        ),
-        expire_date: newItem.expDate
-    })
-    .then((response) => {
-        items.value = response.data.items
-        totalOrderPrice.value = calculateTotalOrderPrice(items.value)
-
-            resetForm()
-        })
-        .catch((e) => {
-            console.log(e)
-        })
+const submitNewItem = () => {
+    const safeToSubmit = errorsNew.code || errorsNew.discountLimit || errorsNew.expireDate.message ? false : true
+    console.log(safeToSubmit);
+    submitItem(safeToSubmit,newItem,resetForm)
 }
 
 const resetForm = () => {
@@ -408,38 +356,43 @@ const beginEdit = (event) => {
     errorsCurrent.discountLimit = null
     errorsCurrent.expireDate.message = null
     const item = event.data
-    current = {
-        id: item.id,
-        product_id: item.product.id,
-        code: item.product.code,
-        name: item.product.name,
-        quantity: item.quantity,
-        parts: item.parts,
-        discount: item.discount,
-        discount_limit: item.discount_limit,
-        unit_price: item.unit_price,
-        totalPrice: item.total_amount,
-        expDate: item.expire_date
-    }
+        current.id = item.id,
+        current.product_id = item.product.id,
+        current.code = item.product.code,
+        current.name = item.product.name,
+        current.quantity = item.quantity,
+        current.parts = item.parts,
+        current.discount = item.discount,
+        current.discount_limit = item.discount_limit,
+        current.unit_price = item.unit_price,
+        current.parts_per_unit = item.parts_per_unit,
+        current.totalPrice = item.total_amount,
+        current.expDate = item.expire_date
 }
 
 const updateItem = async (event) => {
 
-    console.log(current.id)
     if (event.field === 'product') {
         current.code = event.newData.product.code
-        getProduct('current')
+        console.log(current);
+        const product = (await getProduct(current.code)).data
+    current.product_id = product.id
+    current.name = product.name
+    current.unit_price = product.price
+    current.parts_per_unit = product.parts_per_unit
+        console.log(current);
     }
-
+    
     if (event.field === 'quantity') current.quantity = event.newData.quantity;
     if (event.field === 'parts') current.parts = event.newData.parts;
     if (event.field === 'unit_price') current.unit_price = event.newData.unit_price;
     if (event.field === 'discount') current.discount = event.newData.discount;
     if (event.field === 'discount_limit') current.discount_limit = event.newData.discount_limit;
     if (event.field === 'expire_date') current.expDate = event.newData.expire_date;
-
-    if(!errorsCurrent.code || !errorsCurrent.discountLimit || !errorsCurrent.expireDate.message) return;
-    {router.put('/order/item/' + current.id, {
+    
+    if(errorsCurrent.code || errorsCurrent.discountLimit || errorsCurrent.expireDate.message) return;
+    console.log(current)
+    router.put('/order/item/' + current.id, {
         product_id: current.product_id,
         quantity: current.quantity,
         parts: current.parts,
@@ -462,7 +415,7 @@ const updateItem = async (event) => {
         onError:(e)=>{
             console.log(e.response);
         }
-    })}
+    })
 }
 
 const deleteItem = () => {
@@ -513,16 +466,6 @@ const completeOrder = () => {
 }
 
 
-const formattedTimeSince = ref(formatTimeSince(props.order.created_at))
 
-if (new Date(props.order.created_at).toDateString() === new Date().toDateString()) {
 
-    setInterval(() => {
-        formattedTimeSince.value = formatTimeSince(props.order.created_at);
-        console.log(formattedTimeSince.value)
-    }, 1000 * 60)
-} else {
-
-    formattedTimeSince.value = formatTimeSince(props.order.created_at);
-}
 </script>
