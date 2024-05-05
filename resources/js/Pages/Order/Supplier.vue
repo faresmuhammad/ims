@@ -19,15 +19,17 @@
             <div class="grid col-9">
                 <div class="col-10 flex flex-column justify-content-between">
                     <h5>
-                        {{ order ? "Order #" + order.reference_code : "No Order" }}
+                        {{
+                            order
+                                ? "Order #" + order.reference_code
+                                : "No Order"
+                        }}
                     </h5>
-                    <div class="flex">
-
-                    <span>Created at:</span>
+                    <div class="flex gap-2">
+                        <span>Created at:</span>
                         <Inplace>
                             <template #display>
                                 {{ formattedTimeSince }}
-                                {{ console.log(formattedTimeSince) }}
                             </template>
                             <template #content>
                                 {{ formatDateTime(order.created_at) }}
@@ -263,6 +265,7 @@
                         <div class="field col-1">
                             <div class="flex flex-column gap-2">
                                 <label for="parts">Parts</label>
+                                <!-- TODO: track user input, if it exceeded the parts per unit show a warning popup with action to add the number of parts per unit to quantity and set to parts the remaining -->
                                 <InputNumber
                                     v-model="newItem.parts"
                                     inputClass="w-full"
@@ -353,10 +356,6 @@
                                 >
                             </div>
                         </div>
-                        <!-- <div class="field col-1">
-                            <label for="total-price">Total Price</label>
-                            <InputText v-model="newItem.totalPrice" class="w-full" id="total-price" />
-                        </div> -->
                     </div>
                 </div>
             </template>
@@ -418,9 +417,7 @@ const updateSupplierOfOrder = () => {
         }
     );
 };
-//TODO: handle errors feedback for:
-//  - no product found
-//  - available quantity in db
+
 
 const selectedItem = ref();
 const newItem = reactive({
@@ -541,7 +538,6 @@ const checkValidCurrentItem = (value, field) => {
                   }
                 : null;
     }
-    console.log(errorsCurrent);
 };
 
 const getNewProduct = async () => {
@@ -580,18 +576,18 @@ const beginEdit = (event) => {
     errorsCurrent.discountLimit = null;
     errorsCurrent.expireDate.message = null;
     const item = event.data;
-    (current.id = item.id),
-        (current.product_id = item.product.id),
-        (current.code = item.product.code),
-        (current.name = item.product.name),
-        (current.quantity = item.quantity),
-        (current.parts = item.parts),
-        (current.discount = item.discount),
-        (current.discount_limit = item.discount_limit),
-        (current.unit_price = item.unit_price),
-        (current.parts_per_unit = item.parts_per_unit),
-        (current.totalPrice = item.total_amount),
-        (current.expDate = item.expire_date);
+    current.id = item.id;
+    current.product_id = item.product.id;
+    current.code = item.product.code;
+    current.name = item.product.name;
+    current.quantity = item.quantity;
+    current.parts = item.parts;
+    current.discount = item.discount;
+    current.discount_limit = item.discount_limit;
+    current.unit_price = item.unit_price;
+    current.parts_per_unit = item.parts_per_unit;
+    current.totalPrice = item.total_amount;
+    current.expDate = item.expire_date;
 };
 
 const updateItem = async (event) => {
