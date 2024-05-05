@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductResource;
 use App\Imports\ProductsImport;
 use Inertia\Inertia;
 use App\Models\Product;
@@ -54,9 +55,10 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
+        $product = new ProductResource(Product::where('slug', $slug)->with(['category:id,name', 'stocks'])->first());
         return Inertia::render('ProductInfo', [
-            'product' => Product::where('slug', $slug)->with('category:id,name')->first(),
-            'categories' => Category::select('id', 'name')->get()
+            'product' => $product,
+            'categories' => Category::select('id', 'name')->get(),
         ]);
     }
 
