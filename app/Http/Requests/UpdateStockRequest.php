@@ -23,11 +23,12 @@ class UpdateStockRequest extends FormRequest
     {
         return [
             'original_quantity' => 'integer',
+            'original_parts' => 'integer',
             'available_quantity' => 'integer',
             'available_parts' => 'integer',
             'discount' => 'numeric|min:0|max:100',
             'discount_limit' => 'required|numeric|min:0|max:100',
-            'expire_date' => 'nullable|date',
+            'expire_date' => 'nullable|string',
             'price' => 'numeric',
         ];
     }

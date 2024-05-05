@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\NewStockRequest;
+use App\Http\Requests\UpdateStockRequest;
 use App\Models\Order;
 use App\Models\Stock;
 use Illuminate\Http\Request;
@@ -22,9 +23,10 @@ class StockController extends Controller
                 'product_id' => $stock['product_id'],
                 'supplier_id' => $stock['supplier_id'],
                 'original_quantity' => $stock['quantity'],
+                'original_parts' => $stock['parts'],
                 'available_quantity' => $stock['quantity'],
                 'available_parts' => $stock['parts'],
-                'expire_date' => $stock['expire_date'],
+                'expire_date' => $stock['expire_date'] ? convertStringToDatemmyyyy($stock['expire_date']) : null,
                 'price' => $stock['price'],
                 'discount' => $stock['discount'],
                 'discount_limit' => $stock['discount_limit']
@@ -39,17 +41,18 @@ class StockController extends Controller
 
     //TODO: update stock
 
-    public function update(Stock $stock, Request $request)
+    public function update(Stock $stock, UpdateStockRequest $request)
     {
+        $validated = $request->safe();
         $stock->update([
-            'supplier_id' => $request->supplier_id,
-            'original_quantity' => $request->original_quantity,
-            'available_quantity' => $request->available_quantity,
-            'original_parts' => $request->original_parts,
-            'available_parts' => $request->available_parts,
-            'expire_date' => $request->expire_date,
-            'price' => $request->price,
-            'discount' => $request->discount,
+            'original_quantity' => $validated->original_quantity,
+            'available_quantity' => $validated->available_quantity,
+            'original_parts' => $validated->original_parts,
+            'available_parts' => $validated->available_parts,
+            'expire_date' => $validated->expire_date ? convertStringToDatemmyyyy($validated->expire_date) : $stock->expire_date,
+            'price' => $validated->price,
+            'discount' => $validated->discount,
+            'discount_limit' => $validated->discount_limit,
         ]);
         return $stock;
     }

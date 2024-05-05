@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
 
     //Stocks
     Route::post('/stocks', [StockController::class, 'store']);
+    Route::put('/stocks/{stock:code}', [StockController::class, 'update']);
 
     //Shifts
     Route::get('shifts',[ShiftController::class,'index']);

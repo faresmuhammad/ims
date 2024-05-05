@@ -22,11 +22,10 @@
             <TabView>
                 <TabPanel header="Product Information">
                     <!-- TODO: Show Product Details code, name, category, description, price, stockoffset -->
-                    <!-- TODO: Prepare stocks seeder and design a scenario-->
 
                     <!-- TODO: update product price from here, update all stocks price if they have the same price and return warning if they have multiple prices to update them from stocks tab -->
 
-                    <ul class="list-none p-0 m-0 border-top-1 border-300">
+                    <ul class="list-none p-0 m-0">
                         <info-item label="Code" :value="product.code" />
                         <info-item label="Name" :value="product.name" />
 
@@ -50,7 +49,201 @@
                         />
                     </ul>
                 </TabPanel>
-                <TabPanel header="Stocks"> </TabPanel>
+                <!-- TODO: Add validation on A. quantity and parts & S. quantity and parts & discount and discount limit & expire date -->
+                <TabPanel header="Stocks">
+                    <DataTable
+                        :value="product.stocks"
+                        showGridlines
+                        :rowStyle="unavailableStockClass"
+                        v-model:editingRows="editingRows"
+                        editMode="row"
+                        @row-edit-save="updateStock"
+                    >
+                        <Column
+                            field="code"
+                            header="Stock Code"
+                            class="text-center"
+                        />
+                        <Column
+                            field="original_quantity"
+                            header="O. Quantity"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="original_parts"
+                            header="O. Parts"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="available_quantity"
+                            header="A. Quantity"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="available_parts"
+                            header="A. Parts"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="sold_quantity"
+                            header="S. Quantity"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="sold_parts"
+                            header="S. Parts"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="parts_per_unit"
+                            header="Parts/unit"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="discount"
+                            header="Discount"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="discount_limit"
+                            header="Discount Limit"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="expire_date"
+                            header="Exp. Date"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ formatExpireDate(data[field]) }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputMask
+                                    id="basic"
+                                    v-model="data[field]"
+                                    placeholder="02/2025"
+                                    mask="99/9999"
+                                    slotChar="mm/yyyy"
+                                    :inputStyle="editInputStyle"
+                                />
+                                <!-- @update:modelValue="
+                                        checkValidCurrentItem($event, 'expDate')
+                                    " -->
+                            </template>
+                        </Column>
+                        <Column
+                            field="price"
+                            header="Price"
+                            class="text-center"
+                        >
+                            <template #body="{ field, data }">
+                                {{ data[field] }}
+                            </template>
+                            <template #editor="{ field, data }">
+                                <InputNumber
+                                    v-model="data[field]"
+                                    :inputStyle="editInputStyle"
+                                />
+                            </template>
+                        </Column>
+                        <Column
+                            field="supplier"
+                            header="Supplier"
+                            class="text-center"
+                        ></Column>
+                        <Column rowEditor />
+                    </DataTable>
+                </TabPanel>
             </TabView>
 
             <!-- TODO: add parts per unit field -->
@@ -180,7 +373,7 @@ import InfoItem from "@/Components/InfoItem.vue";
 import { Head, router } from "@inertiajs/vue3";
 import { reactive, ref } from "vue";
 import { useToast } from "primevue/usetoast";
-
+import { formatExpireDate } from "@/helpers";
 const toast = useToast();
 const props = defineProps({
     product: Object,
@@ -190,6 +383,36 @@ const props = defineProps({
 const productInfo = reactive({ ...props.product });
 const editDialog = ref(false);
 const deleteConfirmation = ref(false);
+
+const editingRows = ref([]);
+const editInputStyle = { width: "10%", "text-align": "center" };
+
+//FIXME: updates can't be visible to the user until the page is reloaded
+const updateStock = (event) => {
+    const { newData } = event;
+    console.log(newData);
+    axios.put("/stocks/" + newData.code, {
+        original_quantity: newData.original_quantity,
+        original_parts: newData.original_parts,
+        available_quantity: newData.available_quantity,
+        available_parts: newData.available_parts,
+        discount: newData.discount,
+        discount_limit: newData.discount_limit,
+        expire_date: newData.expire_date,
+        price: newData.price,
+    }).then(()=>{
+        window.location.reload()
+    });
+};
+
+const unavailableStockClass = (data) => {
+    if (
+        data.sold_quantity === data.original_quantity &&
+        data.sold_parts === data.available_parts
+    ) {
+        return { backgroundColor: "var(--surface-hover)" };
+    }
+};
 
 const hideProductDialog = () => {
     editDialog.value = false;

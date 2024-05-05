@@ -27,7 +27,7 @@ class NewStockRequest extends FormRequest
             'stocks.*.parts' => 'required|integer',
             'stocks.*.discount' => 'required|numeric|min:0|max:100',
             'stocks.*.discount_limit' => 'required|numeric|min:0|max:100',
-            'stocks.*.expire_date' => 'nullable|date',
+            'stocks.*.expire_date' => 'nullable|string',
             'stocks.*.price' => 'required|numeric',
             'stocks.*.product_id' => 'required',
             'stocks.*.supplier_id' => 'required',
