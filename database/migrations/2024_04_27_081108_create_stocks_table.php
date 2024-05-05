@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('code')->unique();
             $table->integer('original_quantity');
+            $table->integer('original_parts');
             $table->integer('available_quantity');
             $table->integer('available_parts')->default(0);
             $table->integer('sold_quantity')->default(0);
