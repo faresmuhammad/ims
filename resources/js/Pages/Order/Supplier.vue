@@ -181,7 +181,7 @@
                 class="text-center col-2"
             >
                 <template #body="{ field, data }">
-                    {{ data[field] ? data[field] : "Empty Exp. Date" }}
+                    {{ data[field] ? formatExpireDate(data[field]) : "Empty Exp. Date" }}
                 </template>
                 <template #editor="{ field, data }">
                     <div class="flex flex-column">
@@ -382,7 +382,7 @@ import axios from "axios";
 import { useToast } from "primevue/usetoast";
 import Toast from "primevue/toast";
 import { useOrders, calculateItemTotalPrice } from "@/composables/orders";
-import { formatDateTime } from "@/helpers";
+import { formatDateTime, formatExpireDate } from "@/helpers";
 
 const props = defineProps({
     order: Object,
@@ -487,19 +487,18 @@ const checkValidItem = (value, field) => {
             1
         );
         //TODO: get the date offset from settings
-        errorsNew.expireDate =
+        errorsNew.expireDate.message =
             date < new Date()
-                ? {
-                      severity: "error",
-                      message: "Expire date must be greater than today",
-                  }
+                ? "Expire date must be greater than today"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? {
-                      severity: "warn",
-                      message:
-                          "Expire Date will be reached in less than 6 months",
-                  }
+                ? "Expire Date will be reached in less than 6 months"
                 : null;
+        errorsNew.expireDate.severity =
+            date < new Date()
+                ? 'error'
+                : date < new Date().setMonth(new Date().getMonth() + 6)
+                ? 'warn'
+                : '';
     }
     console.log(errorsNew);
 };
@@ -524,19 +523,18 @@ const checkValidCurrentItem = (value, field) => {
             1
         );
         //TODO: get the date offset from settings
-        errorsCurrent.expireDate =
+        errorsCurrent.expireDate.message =
             date < new Date()
-                ? {
-                      severity: "error",
-                      message: "Expire date must be greater than today",
-                  }
+                ? "Expire date must be greater than today"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? {
-                      severity: "warn",
-                      message:
-                          "Expire Date will be reached in less than 6 months",
-                  }
+                ? "Expire Date will be reached in less than 6 months"
                 : null;
+        errorsCurrent.expireDate.severity =
+            date < new Date()
+                ? 'error'
+                : date < new Date().setMonth(new Date().getMonth() + 6)
+                ? 'warn'
+                : '';
     }
 };
 
