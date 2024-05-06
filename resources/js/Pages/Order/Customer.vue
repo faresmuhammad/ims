@@ -10,11 +10,10 @@
             stripedRows
             showGridlines
             editMode="cell"
-            @cell-edit-complete="updateItem"
+            @cell-edit-complete="updateCurrentItem"
             @cell-edit-init="beginEdit"
             @keyup.ctrl.delete.exact="deleteItem"
         >
-            <!-- Code -->
             <Column
                 field="product"
                 key="product.code"
@@ -101,6 +100,7 @@
                             : "Empty Exp. Date"
                     }}
                 </template>
+                <!-- TODO:suggestion: on edit mode show dropdown with list of available stocks by expire date and available quantity and parts  -->
                 <template #editor="{ field, data }">
                     <div class="flex flex-column">
                         <InputMask
@@ -110,19 +110,6 @@
                             mask="99/9999"
                             slotChar="mm/yyyy"
                         />
-
-                        <!-- TODO: implement validation-->
-                        <!-- @update:modelValue="
-                                checkValidCurrentItem($event, 'expDate')
-                            "
-                        <small
-                            v-if="errorsCurrent.expireDate"
-                            :class="
-                                errorsCurrent.expireDate.severity === 'error'
-                                    ? 'p-error'
-                                    : 'text-yellow-600'
-                            "
-                            >{{ errorsCurrent.expireDate.message }}</small -->
                         >
                     </div>
                 </template>
@@ -140,7 +127,11 @@
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
-                    @keyup.enter.exact="getNewProduct"
+                    @keyup.enter.exact="
+                        () => {
+                            getNewProduct(newItem);
+                        }
+                    "
                     class="card p-3"
                     style="border-color: var(--primary-color)"
                 >
@@ -174,6 +165,7 @@
                         </div>
                         <div class="field col-1 m-0">
                             <div class="flex flex-column gap-2">
+                                <!-- TODO: track user input, if it exceeded the quantity in stock show a warning popup-->
                                 <label for="quantity">Quantity</label>
                                 <InputNumber
                                     v-model="newItem.quantity"
@@ -197,6 +189,7 @@
                         </div>
                         <div class="field col-1">
                             <div class="flex flex-column gap-2">
+                                <!-- TODO:suggestion: show list of prices for available stocks if there are different prices -->
                                 <label for="selling-price">Selling Price</label>
                                 <InputNumber
                                     v-model="newItem.unit_price"
@@ -208,6 +201,7 @@
                             </div>
                         </div>
                         <div class="field col-1">
+                            <!-- TODO: validate not to exceed stock discount limit -->
                             <div class="flex flex-column gap-2">
                                 <label for="discount">Discount</label>
                                 <InputNumber
@@ -226,15 +220,17 @@
                             </div>
                         </div>
                         <div class="field col-1">
+                            <!-- TODO:suggestion: if product code entered, show dropdown with list of available stocks by expire date (if different expiredates) and available quantity and parts  -->
+                            <!-- TODO:suggestion: if stock code entered, show the same above with selected expire date -->
                             <div class="flex flex-column gap-2">
                                 <label for="exp-date">Exp. Date</label>
                                 <InputMask
                                     id="exp-date"
                                     v-model="newItem.expDate"
-                                    placeholder="02/2025"
                                     mask="99/9999"
                                     slotChar="mm/yyyy"
                                     inputClass="w-full"
+                                    disabled
                                 />
                                 <!-- TODO: implement validation -->
                                 <!-- @update:modelValue="
@@ -281,7 +277,14 @@ const props = defineProps({
     order: Object,
 });
 
-const { items, getItems, totalOrderPrice } = useOrders(props.order);
+const {
+    items,
+    getItems,
+    totalOrderPrice,
+    getNewProduct,
+    submitItem,
+    updateItem,
+} = useOrders(props.order);
 
 const selectedItem = ref();
 const newItem = reactive({
@@ -291,7 +294,6 @@ const newItem = reactive({
     quantity: 1,
     parts: 0,
     discount: 0,
-    discount_limit: 0,
     unit_price: 0,
     parts_per_unit: null,
     expDate: "",
@@ -305,22 +307,62 @@ const current = reactive({
     quantity: 1,
     parts: 0,
     discount: 0,
-    discount_limit: 0,
     unit_price: 0,
     parts_per_unit: null,
     totalPrice: 0,
     expDate: "",
 });
 
-const getNewProduct = () => {};
+const submitNewItem = () => {
+    const safeToSubmit = true; //TODO: add validation
+    submitItem(safeToSubmit, newItem);
+};
 
-const submitNewItem = () => {};
+const beginEdit = (event) => {
+    //TODO: clear errors
 
-const beginEdit = () => {};
+    const item = event.data;
+    current.id = item.id;
+    current.product_id = item.product.id;
+    current.code = item.product.code;
+    current.name = item.product.name;
+    current.quantity = item.quantity;
+    current.parts = item.parts;
+    current.discount = item.discount;
+    current.discount_limit = item.discount_limit;
+    current.unit_price = item.unit_price;
+    current.parts_per_unit = item.parts_per_unit;
+    current.totalPrice = item.total_amount;
+    current.expDate = item.expire_date;
+};
 
-const updateItem = () => {};
+const updateCurrentItem = (event) => {
+    const safeToUpdate = true; //TODO: add validation
+    updateItem(event, current, safeToUpdate, (page) => {
+        toast.add({
+            severity: page.props.flash.severity,
+            summary: page.props.flash.message,
+            life: 2000,
+        });
+    });
+};
 
 const completeOrder = () => {};
 
-const deleteItem = () => {};
+const deleteItem = () => {
+    console.log(selectedItem.value);
+    if (selectedItem.value) {
+        router.delete("/order/item/" + selectedItem.value.id, {
+            onSuccess: () => {
+                console.log("item deleted");
+                getItems();
+            },
+        });
+    } else {
+        toast.add({
+            severity: "error",
+            summary: "Please, select an item to delete",
+        });
+    }
+};
 </script>

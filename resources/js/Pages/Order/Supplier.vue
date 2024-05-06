@@ -19,18 +19,10 @@
             stripedRows
             showGridlines
             editMode="cell"
-            @cell-edit-complete="updateItem"
+            @cell-edit-complete="updateCurrentItem"
             @cell-edit-init="beginEdit"
             @keyup.ctrl.delete.exact="deleteItem"
         >
-            <!-- <template #header>
-                <div
-                    class="flex flex-wrap align-items-center justify-content-between gap-2"
-                >
-                    <span class="text-xl text-900 font-bold">Supplier</span>
-                </div>
-            </template> -->
-
             <Column
                 field="product"
                 key="product.code"
@@ -182,7 +174,7 @@
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
-                    @keyup.enter.exact="getNewProduct"
+                    @keyup.enter.exact="getNewProduct(newItem)"
                     class="card p-3"
                     style="border-color: var(--primary-color)"
                 >
@@ -352,9 +344,15 @@ const props = defineProps({
     suppliers: Object,
 });
 
-const { items, getItems, totalOrderPrice, getProduct, submitItem } = useOrders(
-    props.order
-);
+const {
+    items,
+    getItems,
+    totalOrderPrice,
+    getNewProduct,
+    submitItem,
+    updateItem,
+    resetForm,
+} = useOrders(props.order);
 const toast = useToast();
 
 const selectedSupplier = ref(props.order.supplier_id);
@@ -492,14 +490,6 @@ const checkValidCurrentItem = (value, field) => {
     }
 };
 
-const getNewProduct = async () => {
-    const product = (await getProduct(newItem.code)).data;
-    newItem.product_id = product.id;
-    newItem.name = product.name;
-    newItem.unit_price = product.price;
-    newItem.parts_per_unit = product.parts_per_unit;
-};
-
 const submitNewItem = () => {
     const safeToSubmit =
         errorsNew.code ||
@@ -507,20 +497,23 @@ const submitNewItem = () => {
         errorsNew.expireDate.message
             ? false
             : true;
-    console.log(safeToSubmit);
-    submitItem(safeToSubmit, newItem, resetForm);
+    submitItem(safeToSubmit, newItem);
 };
 
-const resetForm = () => {
-    newItem.product_id = null;
-    newItem.code = "";
-    newItem.name = "";
-    newItem.quantity = 1;
-    newItem.parts = 0;
-    newItem.discount = 0;
-    newItem.discount_limit = 0;
-    newItem.unit_price = 0;
-    newItem.expDate = "";
+const updateCurrentItem = (event) => {
+    const safeToUpdate =
+        errorsCurrent.code ||
+        errorsCurrent.discountLimit ||
+        errorsCurrent.expireDate.message
+            ? false
+            : true;
+    updateItem(event, current, safeToUpdate, (page) => {
+        toast.add({
+            severity: page.props.flash.severity,
+            summary: page.props.flash.message,
+            life: 2000,
+        });
+    });
 };
 
 const beginEdit = (event) => {
@@ -540,69 +533,6 @@ const beginEdit = (event) => {
     current.parts_per_unit = item.parts_per_unit;
     current.totalPrice = item.total_amount;
     current.expDate = item.expire_date;
-};
-
-const updateItem = async (event) => {
-    if (event.field === "product") {
-        current.code = event.newData.product.code;
-        console.log(current);
-        const product = (await getProduct(current.code)).data;
-        current.product_id = product.id;
-        current.name = product.name;
-        current.unit_price = product.price;
-        current.parts_per_unit = product.parts_per_unit;
-        console.log(current);
-    }
-
-    if (event.field === "quantity") current.quantity = event.newData.quantity;
-    if (event.field === "parts") current.parts = event.newData.parts;
-    if (event.field === "unit_price")
-        current.unit_price = event.newData.unit_price;
-    if (event.field === "discount") current.discount = event.newData.discount;
-    if (event.field === "discount_limit")
-        current.discount_limit = event.newData.discount_limit;
-    if (event.field === "expire_date")
-        current.expDate = event.newData.expire_date;
-
-    if (
-        errorsCurrent.code ||
-        errorsCurrent.discountLimit ||
-        errorsCurrent.expireDate.message
-    )
-        return;
-    console.log(current);
-    router.put(
-        "/order/item/" + current.id,
-        {
-            product_id: current.product_id,
-            quantity: current.quantity,
-            parts: current.parts,
-            unit_price: current.unit_price,
-            discount: current.discount,
-            discount_limit: current.discount_limit,
-            total_amount: calculateItemTotalPrice(
-                current.unit_price,
-                current.quantity,
-                current.parts,
-                current.parts_per_unit,
-                current.discount
-            ),
-            expire_date: current.expDate,
-        },
-        {
-            onSuccess: (pageObj) => {
-                getItems();
-                toast.add({
-                    severity: pageObj.props.flash.severity,
-                    summary: pageObj.props.flash.message,
-                    life: 2000,
-                });
-            },
-            onError: (e) => {
-                console.log(e.response);
-            },
-        }
-    );
 };
 
 const deleteItem = () => {
