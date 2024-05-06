@@ -3,55 +3,13 @@
     <div class="card m-3">
         <!-- Header -->
         <Toast />
-        <div class="grid justify-content-between">
-            <div class="col-3">
-                <h2>Supplier</h2>
-                <Dropdown
-                    v-model="selectedSupplier"
-                    :options="suppliers"
-                    placeholder="Select a Supplier"
-                    @update:modelValue="updateSupplierOfOrder"
-                    optionLabel="name"
-                    optionValue="id"
-                />
-            </div>
-
-            <div class="grid col-9">
-                <div class="col-10 flex flex-column justify-content-between">
-                    <h5>
-                        {{
-                            order
-                                ? "Order #" + order.reference_code
-                                : "No Order"
-                        }}
-                    </h5>
-                    <div class="flex gap-2">
-                        <span>Created at:</span>
-                        <Inplace>
-                            <template #display>
-                                {{ formattedTimeSince }}
-                            </template>
-                            <template #content>
-                                {{ formatDateTime(order.created_at) }}
-                            </template>
-                        </Inplace>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <Tag
-                        :value="order.completed ? 'Completed' : 'Incomplete'"
-                        :severity="order.completed ? 'success' : 'warning'"
-                        class="text-xl py-1 px-3"
-                        :icon="
-                            order.completed
-                                ? 'pi pi-check text-xl'
-                                : 'pi pi-times text-xl'
-                        "
-                    />
-                </div>
-            </div>
-        </div>
+        <order-header
+            :order="order"
+            :suppliers="suppliers"
+            title="Supplier"
+            v-model:selectedSupplier="selectedSupplier"
+            @update:supplier="updateSupplierOfOrder"
+        />
         <!-- Table of order items -->
         <Toast position="top-center" group="tc" />
         <DataTable
@@ -65,13 +23,13 @@
             @cell-edit-init="beginEdit"
             @keyup.ctrl.delete.exact="deleteItem"
         >
-            <template #header>
+            <!-- <template #header>
                 <div
                     class="flex flex-wrap align-items-center justify-content-between gap-2"
                 >
                     <span class="text-xl text-900 font-bold">Supplier</span>
                 </div>
-            </template>
+            </template> -->
 
             <Column
                 field="product"
@@ -181,7 +139,11 @@
                 class="text-center col-2"
             >
                 <template #body="{ field, data }">
-                    {{ data[field] ? formatExpireDate(data[field]) : "Empty Exp. Date" }}
+                    {{
+                        data[field]
+                            ? formatExpireDate(data[field])
+                            : "Empty Exp. Date"
+                    }}
                 </template>
                 <template #editor="{ field, data }">
                     <div class="flex flex-column">
@@ -383,28 +345,21 @@ import { useToast } from "primevue/usetoast";
 import Toast from "primevue/toast";
 import { useOrders, calculateItemTotalPrice } from "@/composables/orders";
 import { formatDateTime, formatExpireDate } from "@/helpers";
+import OrderHeader from "@/Components/OrderHeader.vue";
 
 const props = defineProps({
     order: Object,
     suppliers: Object,
 });
 
-const {
-    items,
-    getItems,
-    totalOrderPrice,
-    getProduct,
-    submitItem,
-    formattedTimeSince,
-    updateTodayTimeSince,
-} = useOrders(props.order);
+const { items, getItems, totalOrderPrice, getProduct, submitItem } = useOrders(
+    props.order
+);
 const toast = useToast();
-
-updateTodayTimeSince();
 
 const selectedSupplier = ref(props.order.supplier_id);
 
-const updateSupplierOfOrder = () => {
+const updateSupplierOfOrder = (event) => {
     router.put(
         "/orders/" + props.order.id,
         {
@@ -417,7 +372,6 @@ const updateSupplierOfOrder = () => {
         }
     );
 };
-
 
 const selectedItem = ref();
 const newItem = reactive({
@@ -495,10 +449,10 @@ const checkValidItem = (value, field) => {
                 : null;
         errorsNew.expireDate.severity =
             date < new Date()
-                ? 'error'
+                ? "error"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? 'warn'
-                : '';
+                ? "warn"
+                : "";
     }
     console.log(errorsNew);
 };
@@ -531,10 +485,10 @@ const checkValidCurrentItem = (value, field) => {
                 : null;
         errorsCurrent.expireDate.severity =
             date < new Date()
-                ? 'error'
+                ? "error"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? 'warn'
-                : '';
+                ? "warn"
+                : "";
     }
 };
 
