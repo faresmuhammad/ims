@@ -23,7 +23,9 @@ class OrderController extends Controller
         } elseif ($type == 'return') {
             return $order;
         } else {
-            return $order;
+            return Inertia::render('Order/Customer', [
+                'order' => $order
+            ]);
         }
     }
 

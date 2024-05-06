@@ -1,0 +1,326 @@
+<template>
+    <Head :title="order ? 'Order #' + order.reference_code : 'No Order'" />
+    <div class="card m-3">
+        <order-header title="Customer" :order="order" />
+
+        <DataTable
+            v-model:selection="selectedItem"
+            selectionMode="single"
+            :value="items"
+            stripedRows
+            showGridlines
+            editMode="cell"
+            @cell-edit-complete="updateItem"
+            @cell-edit-init="beginEdit"
+            @keyup.ctrl.delete.exact="deleteItem"
+        >
+            <!-- Code -->
+            <Column
+                field="product"
+                key="product.code"
+                header="Code"
+                class="text-center col"
+            >
+                <template #body="{ field, data }">
+                    {{ data[field].code }}
+                </template>
+                <template #editor="{ field, data }">
+                    <InputText v-model="data[field].code" />
+                </template>
+            </Column>
+            <Column
+                field="product.name"
+                header="Name"
+                class="text-center col-3"
+            ></Column>
+            <Column
+                field="quantity"
+                header="Quantity"
+                class="text-center col-1"
+            >
+                <template #body="{ field, data }">
+                    {{ data[field] }}
+                </template>
+                <template #editor="{ field, data }">
+                    <InputNumber v-model="data[field]" inputmode="integer" />
+                </template>
+            </Column>
+            <Column field="parts" header="Parts" class="text-center col-1">
+                <template #body="{ field, data }">
+                    {{ data[field] }}
+                </template>
+                <template #editor="{ field, data }">
+                    <InputNumber v-model="data[field]" inputId="integer" />
+                </template>
+            </Column>
+            <Column
+                field="unit_price"
+                header="Selling Price"
+                class="text-center col-1"
+            >
+                <template #body="{ data, field }">
+                    EGP {{ data[field] }}
+                </template>
+                <template #editor="{ data, field }">
+                    <InputNumber
+                        v-model="data[field]"
+                        mode="currency"
+                        currency="EGP"
+                    />
+                </template>
+            </Column>
+            <Column
+                field="discount"
+                header="Discount"
+                class="text-center col-1"
+            >
+                <template #body="{ field, data }">
+                    %{{ data[field] }}
+                </template>
+                <template #editor="{ field, data }">
+                    <InputNumber
+                        v-model="data[field]"
+                        inputId="percent"
+                        prefix="%"
+                        :min="0"
+                        :max="100"
+                    />
+                    <!-- TODO: implement validation-->
+                    <!-- @input="checkValidCurrentItem($event.value, 'discount')" -->
+                </template>
+            </Column>
+            <Column
+                field="expire_date"
+                header="Exp. Date"
+                class="text-center col-2"
+            >
+                <template #body="{ field, data }">
+                    {{
+                        data[field]
+                            ? formatExpireDate(data[field])
+                            : "Empty Exp. Date"
+                    }}
+                </template>
+                <template #editor="{ field, data }">
+                    <div class="flex flex-column">
+                        <InputMask
+                            id="basic"
+                            v-model="data[field]"
+                            placeholder="02/2025"
+                            mask="99/9999"
+                            slotChar="mm/yyyy"
+                        />
+
+                        <!-- TODO: implement validation-->
+                        <!-- @update:modelValue="
+                                checkValidCurrentItem($event, 'expDate')
+                            "
+                        <small
+                            v-if="errorsCurrent.expireDate"
+                            :class="
+                                errorsCurrent.expireDate.severity === 'error'
+                                    ? 'p-error'
+                                    : 'text-yellow-600'
+                            "
+                            >{{ errorsCurrent.expireDate.message }}</small -->
+                        >
+                    </div>
+                </template>
+            </Column>
+            <Column
+                field="total_amount"
+                header="Total Price"
+                class="text-center col-1"
+            >
+                <template #body="{ data, field }">
+                    EGP {{ data[field].toFixed(2) }}
+                </template>
+            </Column>
+
+            <template #footer>
+                <div
+                    @keydown.ctrl.enter="submitNewItem"
+                    @keyup.enter.exact="getNewProduct"
+                    class="card p-3"
+                    style="border-color: var(--primary-color)"
+                >
+                    <div class="formgrid grid">
+                        <!-- feedback: product not found -->
+                        <div class="field col-2">
+                            <div class="flex flex-column gap-2">
+                                <label for="code">Code</label>
+                                <InputText
+                                    v-model="newItem.code"
+                                    class="w-full"
+                                    id="code"
+                                />
+                                <!-- TODO: implement validation -->
+                                <!-- :invalid="errorsNew.code !== null"
+                                <small class="p-error">{{
+                                    errorsNew.code
+                                }}</small> -->
+                            </div>
+                        </div>
+                        <div class="field col-3">
+                            <div class="flex flex-column gap-2">
+                                <label for="name">Name</label>
+                                <InputText
+                                    v-model="newItem.name"
+                                    class="w-full"
+                                    id="name"
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                        <div class="field col-1 m-0">
+                            <div class="flex flex-column gap-2">
+                                <label for="quantity">Quantity</label>
+                                <InputNumber
+                                    v-model="newItem.quantity"
+                                    inputClass="w-full"
+                                    id="quantity"
+                                    inputId="integer"
+                                />
+                            </div>
+                        </div>
+                        <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+                                <label for="parts">Parts</label>
+                                <!-- TODO: track user input, if it exceeded the parts per unit show a warning popup with action to add the number of parts per unit to quantity and set to parts the remaining -->
+                                <InputNumber
+                                    v-model="newItem.parts"
+                                    inputClass="w-full"
+                                    id="parts"
+                                    inputId="integer"
+                                />
+                            </div>
+                        </div>
+                        <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+                                <label for="selling-price">Selling Price</label>
+                                <InputNumber
+                                    v-model="newItem.unit_price"
+                                    inputClass="w-full"
+                                    id="selling-price"
+                                    mode="currency"
+                                    currency="EGP"
+                                />
+                            </div>
+                        </div>
+                        <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+                                <label for="discount">Discount</label>
+                                <InputNumber
+                                    v-model="newItem.discount"
+                                    inputClass="w-full"
+                                    id="discount"
+                                    inputId="percent"
+                                    prefix="%"
+                                    :min="0"
+                                    :max="100"
+                                />
+                                <!-- TODO: implement validation -->
+                                <!-- @input="
+                                        checkValidItem($event.value, 'discount')
+                                    " -->
+                            </div>
+                        </div>
+                        <div class="field col-1">
+                            <div class="flex flex-column gap-2">
+                                <label for="exp-date">Exp. Date</label>
+                                <InputMask
+                                    id="exp-date"
+                                    v-model="newItem.expDate"
+                                    placeholder="02/2025"
+                                    mask="99/9999"
+                                    slotChar="mm/yyyy"
+                                    inputClass="w-full"
+                                />
+                                <!-- TODO: implement validation -->
+                                <!-- @update:modelValue="
+                                        checkValidItem($event, 'expDate')
+                                    "
+                                    :invalid="errorsNew.expireDate.message" -->
+                                <!-- <small
+                                    v-if="errorsNew.expireDate"
+                                    :class="
+                                        errorsNew.expireDate.severity ===
+                                        'error'
+                                            ? 'p-error'
+                                            : 'text-yellow-600'
+                                    "
+                                    >{{ errorsNew.expireDate.message }}</small
+                                > -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </DataTable>
+        <h5>Total Price: {{ totalOrderPrice }}</h5>
+        <!-- Save and cancel buttons -->
+        <div :class="order.completed ? 'hidden' : 'flex justify-content-end'">
+            <Button label="Cancel" outlined severity="danger" />
+            <Button
+                label="Save"
+                class="mx-2"
+                severity="success"
+                @click="completeOrder"
+            />
+        </div>
+    </div>
+</template>
+
+<script setup>
+import { Head } from "@inertiajs/vue3";
+import { ref, reactive } from "vue";
+import OrderHeader from "@/Components/OrderHeader.vue";
+import { useOrders } from "@/composables/orders";
+import { formatExpireDate } from "@/helpers";
+const props = defineProps({
+    order: Object,
+});
+
+const { items, getItems, totalOrderPrice } = useOrders(props.order);
+
+const selectedItem = ref();
+const newItem = reactive({
+    product_id: null,
+    code: "",
+    name: "",
+    quantity: 1,
+    parts: 0,
+    discount: 0,
+    discount_limit: 0,
+    unit_price: 0,
+    parts_per_unit: null,
+    expDate: "",
+});
+
+const current = reactive({
+    id: null,
+    product_id: null,
+    code: "",
+    name: "",
+    quantity: 1,
+    parts: 0,
+    discount: 0,
+    discount_limit: 0,
+    unit_price: 0,
+    parts_per_unit: null,
+    totalPrice: 0,
+    expDate: "",
+});
+
+const getNewProduct = () => {};
+
+const submitNewItem = () => {};
+
+const beginEdit = () => {};
+
+const updateItem = () => {};
+
+const completeOrder = () => {};
+
+const deleteItem = () => {};
+</script>
