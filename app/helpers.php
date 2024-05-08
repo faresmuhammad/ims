@@ -18,22 +18,18 @@ if (!function_exists('randomCode')) {
     }
 }
 
-if (!function_exists('convertStringToDatemmyyyy')) {
-    function convertStringToDatemmyyyy(string $string)
-    {
-        $dateParts = explode('/', $string);
-        $month = $dateParts[0];
-        $year = $dateParts[1];
-        $date = Carbon::createFromDate($year, $month, 1);
-
-        return $date;
-    }
+function createDateFromFormat(string $date,string $format){
+    return Carbon::createFromFormat($format,$date);
+}
+function createDateFromExpireFormat(string $date){
+    return createDateFromFormat($date,'m/Y');
 }
 
 if (!function_exists('formatCarbonDate')) {
     function formatCarbonDate(?string $date, $format = 'm/Y')
     {
-        if ($date == null) return;
+        if ($date == null)
+            return;
         $carbonDate = Carbon::parse($date);
         return $carbonDate->format($format);
     }

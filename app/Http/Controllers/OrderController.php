@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Supplier;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -43,41 +44,16 @@ class OrderController extends Controller
         ]);
     }
 
-    public function update(Order $order, Request $request)
+    public function update(Order $order, Request $request, OrderService $service)
     {
-        $order->update([
-            'supplier_id' => $request->supplier_id ?? $order->supplier_id,
-            'total_amount' => $request->total_amount ?? $order->total_amount,
-            'discount' => $request->discount ?? $order->discount,
-            'completed' => $request->completed ?? $order->completed
-        ]);
-        $request->session()->flash('severity', 'success');
-        $request->session()->flash('message', 'Order updated successfully');
+        $service->updateOrder($order, $request);
     }
 
 
 
-    public function newItem(Order $order, Request $request)
+    public function newItem(Order $order, Request $request, OrderService $service)
     {
-        $item = OrderItem::create([
-            'order_id' => $request->order_id,
-            'product_id' => $request->product_id,
-            'quantity' => $request->quantity,
-            'parts' => $request->parts,
-            'unit_price' => $request->unit_price,
-            'discount' => $request->discount,
-            'discount_limit' => $request->discount_limit,
-            'total_amount' => $request->total_amount,
-            'expire_date' => $request->expire_date ? convertStringToDatemmyyyy($request->expire_date) : null
-        ]);
-        return response()->json([
-            'item' => $item->with(['product'])->first(),
-            'items' => $order->items()->with([
-                'product' => function ($query) {
-                    $query->select('id', 'name', 'code', 'price');
-                }
-            ])->get()
-        ]);
+        return $service->createNewOrderItem($order, $request);
     }
 
     public function items(Order $order)
@@ -86,20 +62,9 @@ class OrderController extends Controller
         return OrderItemResource::collection($items);
     }
 
-    public function updateItem(OrderItem $item, Request $request)
+    public function updateItem(OrderItem $item, Request $request, OrderService $service)
     {
-        $item->update([
-            'product_id' => $request->product_id ?? $item->product_id,
-            'quantity' => $request->quantity ?? $item->quantity,
-            'parts' => $request->parts ?? $item->parts,
-            'unit_price' => $request->unit_price ?? $item->unit_price,
-            'discount' => $request->discount ?? $item->discount,
-            'discount_limit' => $request->discount_limit ?? $item->discount_limit,
-            'total_amount' => $request->total_amount ?? $item->total_amount,
-            'expire_date' => $request->expire_date ? convertStringToDatemmyyyy($request->expire_date) : $item->expire_date,
-        ]);
-        $request->session()->flash('severity', 'success');
-        $request->session()->flash('message', 'Item was updated successfully');
+        $service->updateOrderItem($item, $request);
     }
 
     public function deleteItem(OrderItem $item, Request $request)
