@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function () {
     //Placing Order
     Route::post('/orders/new/{type?}', [OrderController::class, 'newOrder'])->name('order.new');
     Route::get('/orders/{reference_code}/{type?}', [OrderController::class, 'show'])->name('order.show');
-    Route::get('/product/{product:code}/{for?}', [ProductController::class, 'getProduct']);
+    Route::get('/product/{code}/{for?}', [ProductController::class, 'getProduct']);
     Route::put('/orders/{order}', [OrderController::class, 'update']);
 
     Route::post('/order/{order:reference_code}/items', [OrderController::class, 'newItem']);

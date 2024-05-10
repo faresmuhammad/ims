@@ -155,7 +155,7 @@
                                     v-model="newItem.name"
                                     class="w-full"
                                     id="name"
-                                    disabled
+                                    readonly
                                 />
                             </div>
                         </div>
@@ -188,7 +188,7 @@
                                 <!-- TODO:suggestion: show list of prices for available stocks if there are different prices -->
                                 <label for="selling-price">Selling Price</label>
                                 <Dropdown
-                                    v-if="newItem.stock.hasOwnProperty('prices')"
+                                    v-if="'prices' in newItem.stock"
                                     v-model="newItem.stock_id"
                                     :options="newItem.stock.prices"
                                     optionLabel="price"
@@ -202,7 +202,7 @@
                                     id="selling-price"
                                     mode="currency"
                                     currency="EGP"
-                                    disabled
+                                    readonly
                                 />
 
 
@@ -232,20 +232,23 @@
                             <!-- TODO:suggestion: if stock code entered, show the same above with selected expire date -->
                             <div class="flex flex-column gap-2">
                                 <label for="exp-date">Exp. Date</label>
-                                <InputMask
-                                    id="exp-date"
-                                    v-model="newItem.expDate"
-                                    mask="99/9999"
-                                    slotChar="mm/yyyy"
-                                    inputClass="w-full"
-                                    disabled
-                                />
                                 <Dropdown
+                                    v-if="'expire_dates' in newItem.stock"
                                     v-model="newItem.stock_id"
                                     :options="newItem.stock.expire_dates"
                                     optionLabel="expire_date"
                                     optionValue="id"
                                     @change="setStockIdForItem"
+                                />
+                                <InputMask
+                                    v-else
+                                    id="exp-date"
+                                    v-model="newItem.expDate"
+                                    mask="99/9999"
+                                    slotChar="mm/yyyy"
+                                    placeholder="02/2025"
+                                    inputClass="w-full"
+                                    readonly
                                 />
                                 <!-- TODO: implement validation -->
                                 <!-- @update:modelValue="

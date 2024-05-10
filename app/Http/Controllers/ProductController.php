@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\NewProductItemResource;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\StockItemResource;
 use App\Imports\ProductsImport;
+use App\Models\Stock;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\Category;
@@ -107,14 +109,17 @@ class ProductController extends Controller
         Excel::import(new ProductsImport(), $request->file('products'));
     }
 
-    public function getProduct(Product $product, ?string $for = 'customer')
+    public function getProduct(string $code, ?string $for = 'customer')
     {
+        $product = Product::where('code', $code)->first();
+        $stock = Stock::where('code', $code)->first();
         if ($for == 'customer') {
-            return new NewProductItemResource(
+            $response = $product ? new NewProductItemResource(
                 $product->load(['stocks' => function (Builder $query) {
                     $query->available()->orderByDesc('expire_date');
                 }
-                ]));
+                ])) : ($stock ? new StockItemResource($stock->load('product')) : []);
+            return $response;
         } else {
             return new NewProductItemResource($product);
         }

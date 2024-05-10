@@ -201,7 +201,7 @@
                                     v-model="newItem.name"
                                     class="w-full"
                                     id="name"
-                                    disabled
+                                    readonly
                                 />
                             </div>
                         </div>
