@@ -1,6 +1,6 @@
-import { onMounted, ref, reactive, toRefs } from "vue"
-import { formatTimeSince } from '@/helpers';
-import { router } from "@inertiajs/vue3";
+import {onMounted, ref, reactive, toRefs} from "vue"
+import {formatTimeSince, formatExpireDate} from '@/helpers';
+import {router} from "@inertiajs/vue3";
 
 export function useOrders(order) {
 
@@ -10,23 +10,34 @@ export function useOrders(order) {
         const response = await axios.get('/order/' + order.reference_code + '/items')
         items.value = response.data
         totalOrderPrice.value = calculateTotalOrderPrice(items.value)
+        console.log(items.value)
     }
 
 
     onMounted(getItems)
 
 
-    const getProduct = (code) => axios.get('/product/' + code);
+    const getProduct = (code, target) => {
+        const url = target === null ? '/product/' + code : '/product/' + code + '/' + target
+        return axios.get(url)
+    };
 
-    const getNewProduct = async (item) => {
-        const product = (await getProduct(item.code)).data;
+    const getNewProduct = async (item, target) => {
+        const product = (await getProduct(item.code, target)).data;
+        const haveStock = 'stock' in product;
         item.product_id = product.id;
         item.name = product.name;
-        item.unit_price = product.price;
+        item.unit_price = haveStock ? 'prices' in product.stock ? product.stock.prices[0].price : product.stock.price : product.price;
+        item.expDate = haveStock ? 'expire_dates' in product.stock ? product.stock.expire_dates[0].expire_date : product.stock.expire_date : '';
         item.parts_per_unit = product.parts_per_unit;
-        //TODO: get stocks of the product for customer
+        if (haveStock) {
+            item.stock = product.stock;
+            item.stock_id = 'prices' in product.stock ? product.stock.prices[0].id : product.stock.id;
+            console.log('prices' in product.stock ? product.stock.prices[0].id : product.stock.id)
+        }
     };
-    const submitItem = async (safeToSubmit, item, extraAction = () => { }) => {
+    const submitItem = async (safeToSubmit, item, extraAction = () => {
+    }) => {
         if (!safeToSubmit) return;
         const response = await axios.post('/order/' + order.reference_code + '/items', {
             order_id: order.id,
@@ -54,7 +65,8 @@ export function useOrders(order) {
     }
 
 
-    const updateItem = async (event, current, safeToUpdate, extraAction = () => { }) => {
+    const updateItem = async (event, current, safeToUpdate, extraAction = () => {
+    }) => {
         console.log(safeToUpdate);
         if (!safeToUpdate) return;
 
@@ -148,9 +160,6 @@ export function useOrders(order) {
 
 
 //TODO: add validation logic here
-
-
-
 
 
 export function calculateItemTotalPrice(price, quantity, parts = 0, partsPerUnit = 1, discount = 0) {

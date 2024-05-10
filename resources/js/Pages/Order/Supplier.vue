@@ -1,8 +1,8 @@
 <template>
-    <Head :title="order ? 'Order #' + order.reference_code : 'No Order'" />
+    <Head :title="order ? 'Order #' + order.reference_code : 'No Order'"/>
     <div class="card m-3">
         <!-- Header -->
-        <Toast />
+        <Toast/>
         <order-header
             :order="order"
             :suppliers="suppliers"
@@ -11,7 +11,7 @@
             @update:supplier="updateSupplierOfOrder"
         />
         <!-- Table of order items -->
-        <Toast position="top-center" group="tc" />
+        <Toast position="top-center" group="tc"/>
         <DataTable
             v-model:selection="selectedItem"
             selectionMode="single"
@@ -33,7 +33,7 @@
                     {{ data[field].code }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputText v-model="data[field].code" />
+                    <InputText v-model="data[field].code"/>
                 </template>
             </Column>
             <Column
@@ -50,7 +50,7 @@
                     {{ data[field] }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputmode="integer" />
+                    <InputNumber v-model="data[field]" inputmode="integer"/>
                 </template>
             </Column>
             <Column field="parts" header="Parts" class="text-center col-1">
@@ -58,7 +58,7 @@
                     {{ data[field] }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputId="integer" />
+                    <InputNumber v-model="data[field]" inputId="integer"/>
                 </template>
             </Column>
             <Column
@@ -120,8 +120,8 @@
                             "
                         />
                         <small class="p-error">{{
-                            errorsCurrent.discountLimit
-                        }}</small>
+                                errorsCurrent.discountLimit
+                            }}</small>
                     </div>
                 </template>
             </Column>
@@ -156,7 +156,7 @@
                                     ? 'p-error'
                                     : 'text-yellow-600'
                             "
-                            >{{ errorsCurrent.expireDate.message }}</small
+                        >{{ errorsCurrent.expireDate.message }}</small
                         >
                     </div>
                 </template>
@@ -174,7 +174,7 @@
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
-                    @keyup.enter.exact="getNewProduct(newItem)"
+                    @keyup.enter.exact="getNewProduct(newItem,'supplier')"
                     class="card p-3"
                     style="border-color: var(--primary-color)"
                 >
@@ -190,8 +190,8 @@
                                     :invalid="errorsNew.code !== null"
                                 />
                                 <small class="p-error">{{
-                                    errorsNew.code
-                                }}</small>
+                                        errorsNew.code
+                                    }}</small>
                             </div>
                         </div>
                         <div class="field col-3">
@@ -260,7 +260,7 @@
                         <div class="field col-1">
                             <div class="flex flex-column gap-2">
                                 <label for="discount_limit"
-                                    >Discount Limit</label
+                                >Discount Limit</label
                                 >
                                 <InputNumber
                                     v-model="newItem.discount_limit"
@@ -279,8 +279,8 @@
                                     :invalid="errorsNew.discountLimit !== null"
                                 />
                                 <small class="p-error">{{
-                                    errorsNew.discountLimit
-                                }}</small>
+                                        errorsNew.discountLimit
+                                    }}</small>
                             </div>
                         </div>
                         <div class="field col-1">
@@ -306,7 +306,7 @@
                                             ? 'p-error'
                                             : 'text-yellow-600'
                                     "
-                                    >{{ errorsNew.expireDate.message }}</small
+                                >{{ errorsNew.expireDate.message }}</small
                                 >
                             </div>
                         </div>
@@ -318,7 +318,7 @@
         <h5>Total Price: {{ totalOrderPrice }}</h5>
         <!-- Save and cancel buttons -->
         <div :class="order.completed ? 'hidden' : 'flex justify-content-end'">
-            <Button label="Cancel" outlined severity="danger" />
+            <Button label="Cancel" outlined severity="danger"/>
             <Button
                 label="Save"
                 class="mx-2"
@@ -330,13 +330,13 @@
 </template>
 
 <script setup>
-import { Head, router } from "@inertiajs/vue3";
-import { onMounted, reactive, ref } from "vue";
+import {Head, router} from "@inertiajs/vue3";
+import {onMounted, reactive, ref} from "vue";
 import axios from "axios";
-import { useToast } from "primevue/usetoast";
+import {useToast} from "primevue/usetoast";
 import Toast from "primevue/toast";
-import { useOrders, calculateItemTotalPrice } from "@/composables/orders";
-import { formatDateTime, formatExpireDate } from "@/helpers";
+import {useOrders, calculateItemTotalPrice} from "@/composables/orders";
+import {formatDateTime, formatExpireDate} from "@/helpers";
 import OrderHeader from "@/Components/OrderHeader.vue";
 
 const props = defineProps({
@@ -443,14 +443,14 @@ const checkValidItem = (value, field) => {
             date < new Date()
                 ? "Expire date must be greater than today"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? "Expire Date will be reached in less than 6 months"
-                : null;
+                    ? "Expire Date will be reached in less than 6 months"
+                    : null;
         errorsNew.expireDate.severity =
             date < new Date()
                 ? "error"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? "warn"
-                : "";
+                    ? "warn"
+                    : "";
     }
     console.log(errorsNew);
 };
@@ -479,14 +479,14 @@ const checkValidCurrentItem = (value, field) => {
             date < new Date()
                 ? "Expire date must be greater than today"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? "Expire Date will be reached in less than 6 months"
-                : null;
+                    ? "Expire Date will be reached in less than 6 months"
+                    : null;
         errorsCurrent.expireDate.severity =
             date < new Date()
                 ? "error"
                 : date < new Date().setMonth(new Date().getMonth() + 6)
-                ? "warn"
-                : "";
+                    ? "warn"
+                    : "";
     }
 };
 

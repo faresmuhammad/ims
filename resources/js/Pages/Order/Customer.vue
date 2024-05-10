@@ -1,7 +1,7 @@
 <template>
-    <Head :title="order ? 'Order #' + order.reference_code : 'No Order'" />
+    <Head :title="order ? 'Order #' + order.reference_code : 'No Order'"/>
     <div class="card m-3">
-        <order-header title="Customer" :order="order" />
+        <order-header title="Customer" :order="order"/>
 
         <DataTable
             v-model:selection="selectedItem"
@@ -24,7 +24,7 @@
                     {{ data[field].code }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputText v-model="data[field].code" />
+                    <InputText v-model="data[field].code"/>
                 </template>
             </Column>
             <Column
@@ -41,7 +41,7 @@
                     {{ data[field] }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputmode="integer" />
+                    <InputNumber v-model="data[field]" inputmode="integer"/>
                 </template>
             </Column>
             <Column field="parts" header="Parts" class="text-center col-1">
@@ -49,7 +49,7 @@
                     {{ data[field] }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputId="integer" />
+                    <InputNumber v-model="data[field]" inputId="integer"/>
                 </template>
             </Column>
             <Column
@@ -127,11 +127,7 @@
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
-                    @keyup.enter.exact="
-                        () => {
-                            getNewProduct(newItem);
-                        }
-                    "
+                    @keyup.enter.exact="getNewProduct(newItem,'customer')"
                     class="card p-3"
                     style="border-color: var(--primary-color)"
                 >
@@ -191,13 +187,25 @@
                             <div class="flex flex-column gap-2">
                                 <!-- TODO:suggestion: show list of prices for available stocks if there are different prices -->
                                 <label for="selling-price">Selling Price</label>
+                                <Dropdown
+                                    v-if="newItem.stock.hasOwnProperty('prices')"
+                                    v-model="newItem.stock_id"
+                                    :options="newItem.stock.prices"
+                                    optionLabel="price"
+                                    optionValue="id"
+                                    @change="setStockIdForItem"
+                                />
                                 <InputNumber
+                                    v-else
                                     v-model="newItem.unit_price"
                                     inputClass="w-full"
                                     id="selling-price"
                                     mode="currency"
                                     currency="EGP"
+                                    disabled
                                 />
+
+
                             </div>
                         </div>
                         <div class="field col-1">
@@ -232,6 +240,13 @@
                                     inputClass="w-full"
                                     disabled
                                 />
+                                <Dropdown
+                                    v-model="newItem.stock_id"
+                                    :options="newItem.stock.expire_dates"
+                                    optionLabel="expire_date"
+                                    optionValue="id"
+                                    @change="setStockIdForItem"
+                                />
                                 <!-- TODO: implement validation -->
                                 <!-- @update:modelValue="
                                         checkValidItem($event, 'expDate')
@@ -256,7 +271,7 @@
         <h5>Total Price: {{ totalOrderPrice }}</h5>
         <!-- Save and cancel buttons -->
         <div :class="order.completed ? 'hidden' : 'flex justify-content-end'">
-            <Button label="Cancel" outlined severity="danger" />
+            <Button label="Cancel" outlined severity="danger"/>
             <Button
                 label="Save"
                 class="mx-2"
@@ -268,11 +283,12 @@
 </template>
 
 <script setup>
-import { Head } from "@inertiajs/vue3";
-import { ref, reactive } from "vue";
+import {Head} from "@inertiajs/vue3";
+import {ref, reactive} from "vue";
 import OrderHeader from "@/Components/OrderHeader.vue";
-import { useOrders } from "@/composables/orders";
-import { formatExpireDate } from "@/helpers";
+import {useOrders} from "@/composables/orders";
+import {formatExpireDate} from "@/helpers";
+
 const props = defineProps({
     order: Object,
 });
@@ -297,6 +313,8 @@ const newItem = reactive({
     unit_price: 0,
     parts_per_unit: null,
     expDate: "",
+    stock: {},
+    stock_id: null,
 });
 
 const current = reactive({
@@ -312,6 +330,15 @@ const current = reactive({
     totalPrice: 0,
     expDate: "",
 });
+
+const setStockIdForItem = (event) => {
+    newItem.unit_price = newItem.stock.prices.find(
+        price => price.id === event.value
+    ).price;
+    newItem.expDate = newItem.stock.expire_dates.find(
+        date => date.id === event.value
+    ).expire_date;
+};
 
 const submitNewItem = () => {
     const safeToSubmit = true; //TODO: add validation
@@ -347,7 +374,8 @@ const updateCurrentItem = (event) => {
     });
 };
 
-const completeOrder = () => {};
+const completeOrder = () => {
+};
 
 const deleteItem = () => {
     console.log(selectedItem.value);

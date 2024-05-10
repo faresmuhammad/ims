@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\NewProductItemResource;
 use App\Http\Resources\ProductResource;
 use App\Imports\ProductsImport;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\Category;
 use Exception;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -105,8 +107,19 @@ class ProductController extends Controller
         Excel::import(new ProductsImport(), $request->file('products'));
     }
 
-    public function getProduct(Product $product)
+    public function getProduct(Product $product, ?string $for = 'customer')
     {
-        return $product;
+        if ($for == 'customer') {
+            return new NewProductItemResource(
+                $product->load(['stocks' => function (Builder $query) {
+                    $query->available()->orderByDesc('expire_date');
+                }
+                ]));
+        } else {
+            return new NewProductItemResource($product);
+        }
+        //TODO: search for product by code if found return product with its stocks
+        //TODO: if not found, search for stock, then return stock with product
+        //TODO:suggestion: modify new stock generated code to be related to product code for faster searching
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,4 +21,11 @@ class Stock extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
+    public function scopeAvailable(Builder $query)
+    {
+        return $query->where('available_quantity', '>', 0)
+            ->orWhere('available_parts', '>', 0);
+    }
+
 }

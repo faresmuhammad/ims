@@ -18,19 +18,20 @@ if (!function_exists('randomCode')) {
     }
 }
 
-function createDateFromFormat(string $date,string $format){
-    return Carbon::createFromFormat($format,$date);
-}
-function createDateFromExpireFormat(string $date){
-    return createDateFromFormat($date,'m/Y');
+function createDateFromFormat(string $date, string $format)
+{
+    return Carbon::createFromFormat($format, $date);
 }
 
-if (!function_exists('formatCarbonDate')) {
-    function formatCarbonDate(?string $date, $format = 'm/Y')
-    {
-        if ($date == null)
-            return;
-        $carbonDate = Carbon::parse($date);
-        return $carbonDate->format($format);
-    }
+function createDateFromExpireFormat(string $date)
+{
+    return createDateFromFormat($date, 'm/Y');
+}
+
+function formatExpireDate(?string $date)
+{
+    if ($date == null)
+        return null;
+    $carbonDate = Carbon::parse($date);
+    return $carbonDate->format('m/Y');
 }

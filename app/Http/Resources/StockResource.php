@@ -26,7 +26,7 @@ class StockResource extends JsonResource
             'parts_per_unit' => $this->product->parts_per_unit,
             'discount' => $this->discount,
             'discount_limit' => $this->discount_limit,
-            'expire_date' => formatCarbonDate($this->expire_date),
+            'expire_date' => formatExpireDate($this->expire_date),
             'price' => $this->price,
             'supplier' => $this->supplier->name,
         ];

@@ -16,17 +16,21 @@ class OrderItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            // 'order' => $this->order,
             'id' => $this->id,
-            'product' => $this->product,
-
+            'product' => [
+                'id' => $this->product->id,
+                'code' => $this->product->code,
+                'name' => $this->product->name,
+                'price' => $this->product->price,
+                'parts_per_unit' => $this->product->parts_per_unit,
+            ],
             'quantity' => $this->quantity,
             'parts' => $this->parts,
             'discount' => $this->discount,
             'discount_limit' => $this->discount_limit,
             'unit_price' => $this->unit_price,
             'total_amount' => $this->total_amount,
-            'expire_date' => formatCarbonDate($this->expire_date),
+            'expire_date' => formatExpireDate($this->expire_date),
         ];
     }
 }
