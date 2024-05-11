@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('product_id');
+            $table->unsignedBigInteger('stock_id')->nullable();
             $table->float('discount')->default(0);
             $table->float('discount_limit')->nullable();
             $table->double('unit_price');
@@ -26,6 +27,7 @@ return new class extends Migration
 
             $table->foreign('order_id')->references('id')->on('orders')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreign('product_id')->references('id')->on('products')->noActionOnDelete()->cascadeOnUpdate();
+            $table->foreign('stock_id')->references('id')->on('stocks')->noActionOnDelete()->cascadeOnUpdate();
         });
     }
 
