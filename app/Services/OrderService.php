@@ -67,27 +67,29 @@ class OrderService
     public function completeSupplierOrder($validated)
     {
         $stocks = $validated->stocks;
-        foreach ($stocks as $stock) {
-            $partsPerUnit = Product::where('id', $stock['product_id'])->pluck('parts_per_unit')->first();
-            Stock::insert([
-                'code' => randomCode(6),
-                'product_id' => $stock['product_id'],
-                'supplier_id' => $stock['supplier_id'],
-                'original_quantity' => $stock['quantity'],
-                'original_parts' => $stock['parts'],
-                'available_quantity' => $stock['quantity'],
-                'available_parts' => $stock['parts'],
-                'parts_per_unit' => $partsPerUnit,
-                'expire_date' => $stock['expire_date'] ? createDateFromExpireFormat($stock['expire_date']) : null,
-                'price' => $stock['price'],
-                'discount' => $stock['discount'],
-                'discount_limit' => $stock['discount_limit']
+        \DB::transaction(function () use ($stocks, $validated) {
+            foreach ($stocks as $stock) {
+                $partsPerUnit = Product::where('id', $stock['product_id'])->pluck('parts_per_unit')->first();
+                Stock::insert([
+                    'code' => randomCode(6),
+                    'product_id' => $stock['product_id'],
+                    'supplier_id' => $stock['supplier_id'],
+                    'original_quantity' => $stock['quantity'],
+                    'original_parts' => $stock['parts'],
+                    'available_quantity' => $stock['quantity'],
+                    'available_parts' => $stock['parts'],
+                    'parts_per_unit' => $partsPerUnit,
+                    'expire_date' => $stock['expire_date'] ? createDateFromExpireFormat($stock['expire_date']) : null,
+                    'price' => $stock['price'],
+                    'discount' => $stock['discount'],
+                    'discount_limit' => $stock['discount_limit']
+                ]);
+            }
+            $order = Order::find($validated->order_id);
+            $order->update([
+                'completed' => true
             ]);
-        }
-        $order = Order::find($validated->order_id);
-        $order->update([
-            'completed' => true
-        ]);
+        });
         return $stocks;
     }
 
@@ -96,16 +98,17 @@ class OrderService
         //check the availability of quantity and parts
         //check if the order discount doesn't exceed the stock discount
 
-
-        $items = OrderItem::hydrate($request->items);
-        foreach ($items as $item) {
-            $stock = Stock::find($item->stock_id);
-            $stockService->updateStockDueToCustomerOrder($stock, $item);
-        }
-        $order = Order::find($request->order_id);
-        $order->update([
-            'completed' => true
-        ]);
+        \DB::transaction(function () use ($request, $stockService) {
+            $items = OrderItem::hydrate($request->items);
+            foreach ($items as $item) {
+                $stock = Stock::find($item->stock_id);
+                $stockService->updateStockDueToCustomerOrder($stock, $item);
+            }
+            $order = Order::find($request->order_id);
+            $order->update([
+                'completed' => true
+            ]);
+        });
         return response()->json([
             'message' => 'Order completed successfully'
         ]);
