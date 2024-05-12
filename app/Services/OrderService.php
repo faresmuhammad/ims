@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Product;
 use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\Stock;
@@ -16,6 +17,7 @@ class OrderService
         $item = OrderItem::create([
             'order_id' => $request->order_id,
             'product_id' => $request->product_id,
+            'stock_id' => $request->stock_id,
             'quantity' => $request->quantity,
             'parts' => $request->parts,
             'unit_price' => $request->unit_price,
@@ -61,10 +63,12 @@ class OrderService
         $request->session()->flash('severity', 'success');
         $request->session()->flash('message', 'Item was updated successfully');
     }
-    public function completeOrder($validated)
+
+    public function completeSupplierOrder($validated)
     {
         $stocks = $validated->stocks;
         foreach ($stocks as $stock) {
+            $partsPerUnit = Product::where('id', $stock['product_id'])->pluck('parts_per_unit')->first();
             Stock::insert([
                 'code' => randomCode(6),
                 'product_id' => $stock['product_id'],
@@ -73,6 +77,7 @@ class OrderService
                 'original_parts' => $stock['parts'],
                 'available_quantity' => $stock['quantity'],
                 'available_parts' => $stock['parts'],
+                'parts_per_unit' => $partsPerUnit,
                 'expire_date' => $stock['expire_date'] ? createDateFromExpireFormat($stock['expire_date']) : null,
                 'price' => $stock['price'],
                 'discount' => $stock['discount'],
@@ -84,5 +89,25 @@ class OrderService
             'completed' => true
         ]);
         return $stocks;
+    }
+
+    public function completeCustomerOrder(Request $request, StockService $stockService)
+    {
+        //check the availability of quantity and parts
+        //check if the order discount doesn't exceed the stock discount
+
+
+        $items = OrderItem::hydrate($request->items);
+        foreach ($items as $item) {
+            $stock = Stock::find($item->stock_id);
+            $stockService->updateStockDueToCustomerOrder($stock, $item);
+        }
+        $order = Order::find($request->order_id);
+        $order->update([
+            'completed' => true
+        ]);
+        return response()->json([
+            'message' => 'Order completed successfully'
+        ]);
     }
 }

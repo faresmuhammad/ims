@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateStockRequest;
 use App\Models\Order;
 use App\Models\Stock;
 use App\Services\OrderService;
+use App\Services\StockService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,7 @@ class StockController extends Controller
     public function store(NewStockRequest $request, OrderService $service)
     {
         $validated = $request->safe();
-        return $service->completeOrder($validated);
+        return $service->completeSupplierOrder($validated);
     }
 
 
@@ -38,24 +39,12 @@ class StockController extends Controller
 
     //TODO: check availability stock for a product
     //TODO: check the discount validity that not exceed the stock discount
-    //TODO: check different prices in stocks for a product and return all prices
     //TODO: order from a stock
 
-    public function order()
+    public function order(Request $request, OrderService $service, StockService $stockService)
     {
-        //get the data from request which is order item
-        //check the availability of quantity and parts
-        //check if the order discount doesn't exceed the stock discount
-
-        //Updating the stock
-        //decrease the order quantity from the available_quantity column
-        //if order parts is not zero && available parts is zero --> count down available quantity by 1 && set available parts to the remaining parts
-        //if order parts is not zero && available parts is not zero --> count down available parts by the order parts
+        return $service->completeCustomerOrder($request, $stockService);
     }
-
-    //TODO: return to stock
-    //TODO: get stocks by product 
-
 
     //TODO: delete stock
 }

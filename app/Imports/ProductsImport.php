@@ -12,7 +12,7 @@ class ProductsImport implements ToModel, WithHeadingRow
 {
 
 
-    
+
     /**
      * @param array $row
      *
@@ -26,7 +26,8 @@ class ProductsImport implements ToModel, WithHeadingRow
             'name' => $row['name'],
             'slug' => Str::slug($row['name']),
             'price' => $row['sales_price'],
-            'description' => ''
+            'description' => '',
+            'parts_per_unit' => 3
         ]);
     }
 }

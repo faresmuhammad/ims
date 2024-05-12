@@ -31,6 +31,7 @@ class OrderItemResource extends JsonResource
             'unit_price' => $this->unit_price,
             'total_amount' => $this->total_amount,
             'expire_date' => formatExpireDate($this->expire_date),
+            'stock_id' => $this->stock_id
         ];
     }
 }

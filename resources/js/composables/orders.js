@@ -39,7 +39,7 @@ export function useOrders(order) {
     const submitItem = async (safeToSubmit, item, extraAction = () => {
     }) => {
         if (!safeToSubmit) return;
-        const response = await axios.post('/order/' + order.reference_code + '/items', {
+        const data = {
             order_id: order.id,
             product_id: item.product_id,
             quantity: item.quantity,
@@ -55,7 +55,9 @@ export function useOrders(order) {
                 item.discount
             ),
             expire_date: item.expDate
-        }).catch((error) => console.log(error))
+        }
+        const dataToSubmit = 'stock_id' in item ? {...data, stock_id: item.stock_id} : data
+        const response = await axios.post('/order/' + order.reference_code + '/items', dataToSubmit).catch((error) => console.log(error))
 
         items.value = response.data.items
         totalOrderPrice.value = calculateTotalOrderPrice(items.value)
@@ -65,6 +67,7 @@ export function useOrders(order) {
     }
 
 
+    //TODO: handle customer order item and stock update
     const updateItem = async (event, current, safeToUpdate, extraAction = () => {
     }) => {
         console.log(safeToUpdate);

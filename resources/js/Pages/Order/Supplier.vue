@@ -572,7 +572,7 @@ const completeOrder = () => {
     });
     //TODO:: handle validation flash errors
     axios
-        .post("/stocks", {
+        .post("/order/supplier/complete", {
             stocks: stocks,
             order_id: props.order.id,
         })

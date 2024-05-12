@@ -286,7 +286,7 @@
 </template>
 
 <script setup>
-import {Head} from "@inertiajs/vue3";
+import {Head, router} from "@inertiajs/vue3";
 import {ref, reactive} from "vue";
 import OrderHeader from "@/Components/OrderHeader.vue";
 import {useOrders} from "@/composables/orders";
@@ -378,6 +378,16 @@ const updateCurrentItem = (event) => {
 };
 
 const completeOrder = () => {
+    console.log(items.value)
+    router.put('/order/customer/complete', {
+            order_id: props.order.id,
+            items: items.value
+        },
+        {
+            onSuccess: (page) => {
+                console.log(page)
+            }
+        })
 };
 
 const deleteItem = () => {

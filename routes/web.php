@@ -49,8 +49,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/order/item/{item}', [OrderController::class, 'updateItem']);
     Route::delete('/order/item/{item}', [OrderController::class, 'deleteItem']);
 
+    Route::post('/order/supplier/complete', [StockController::class, 'store']);
+    Route::put('/order/customer/complete', [StockController::class, 'order']);
     //Stocks
-    Route::post('/stocks', [StockController::class, 'store']);
     Route::put('/stocks/{stock:code}', [StockController::class, 'update']);
 
     //Shifts
