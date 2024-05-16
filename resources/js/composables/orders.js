@@ -33,7 +33,6 @@ export function useOrders(order) {
         if (haveStock) {
             item.stock = product.stock;
             item.stock_id = 'prices' in product.stock ? product.stock.prices[0].id : product.stock.id;
-            console.log('prices' in product.stock ? product.stock.prices[0].id : product.stock.id)
         }
     };
     const submitItem = async (safeToSubmit, item, extraAction = () => {
@@ -68,8 +67,7 @@ export function useOrders(order) {
 
 
     //TODO: handle customer order item and stock update
-    const updateItem = async (event, current, safeToUpdate, extraAction = () => {
-    }) => {
+    const updateItem = async (event, current, safeToUpdate, extraAction = () => {}) => {
         console.log(safeToUpdate);
         if (!safeToUpdate) return;
 
@@ -113,6 +111,7 @@ export function useOrders(order) {
                     current.discount
                 ),
                 expire_date: current.expDate,
+                stock_id: current.stock_id
             },
             {
                 onSuccess: (page) => {
@@ -147,6 +146,7 @@ export function useOrders(order) {
         if ('discount_limit' in item) item.discount_limit = 0;
         item.unit_price = 0;
         item.expDate = "";
+        item.stock_id = null
     };
     return {
         items, getItems,

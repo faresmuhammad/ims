@@ -492,21 +492,17 @@ const checkValidCurrentItem = (value, field) => {
 
 const submitNewItem = () => {
     const safeToSubmit =
-        errorsNew.code ||
-        errorsNew.discountLimit ||
-        errorsNew.expireDate.message
-            ? false
-            : true;
+        !(errorsNew.code ||
+            errorsNew.discountLimit ||
+            errorsNew.expireDate.message);
     submitItem(safeToSubmit, newItem);
 };
 
 const updateCurrentItem = (event) => {
     const safeToUpdate =
-        errorsCurrent.code ||
-        errorsCurrent.discountLimit ||
-        errorsCurrent.expireDate.message
-            ? false
-            : true;
+        !(errorsCurrent.code ||
+            errorsCurrent.discountLimit ||
+            errorsCurrent.expireDate.message);
     updateItem(event, current, safeToUpdate, (page) => {
         toast.add({
             severity: page.props.flash.severity,

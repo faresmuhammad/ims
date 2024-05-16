@@ -5,14 +5,16 @@
 
         <DataTable
             v-model:selection="selectedItem"
+            v-model:editingRows="editingRows"
             selectionMode="single"
             :value="items"
             stripedRows
             showGridlines
-            editMode="cell"
-            @cell-edit-complete="updateCurrentItem"
-            @cell-edit-init="beginEdit"
+            editMode="row"
+            @row-edit-save="updateCurrentItem"
+            @row-edit-init="beginEdit"
             @keyup.ctrl.delete.exact="deleteItem"
+            dataKey="id"
         >
             <Column
                 field="product"
@@ -24,14 +26,18 @@
                     {{ data[field].code }}
                 </template>
                 <template #editor="{ field, data }">
-                    <InputText v-model="data[field].code"/>
+                    <InputText v-model="current.code" @keyup.enter.exact="getNewProduct(current,'customer')"/>
                 </template>
             </Column>
             <Column
                 field="product.name"
                 header="Name"
                 class="text-center col-3"
-            ></Column>
+            >
+                <template #editor="{ field, data }">
+                    {{ current.name ?? data[field].name }}
+                </template>
+            </Column>
             <Column
                 field="quantity"
                 header="Quantity"
@@ -40,16 +46,16 @@
                 <template #body="{ field, data }">
                     {{ data[field] }}
                 </template>
-                <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputmode="integer"/>
+                <template #editor>
+                    <InputNumber v-model="current.quantity" inputmode="integer"/>
                 </template>
             </Column>
             <Column field="parts" header="Parts" class="text-center col-1">
                 <template #body="{ field, data }">
                     {{ data[field] }}
                 </template>
-                <template #editor="{ field, data }">
-                    <InputNumber v-model="data[field]" inputId="integer"/>
+                <template #editor>
+                    <InputNumber v-model="current.parts" inputId="integer"/>
                 </template>
             </Column>
             <Column
@@ -60,11 +66,23 @@
                 <template #body="{ data, field }">
                     EGP {{ data[field] }}
                 </template>
-                <template #editor="{ data, field }">
+                <template #editor>
+                    <Dropdown
+                        v-if="'prices' in current.stock"
+                        v-model="current.stock_id"
+                        :options="current.stock.prices"
+                        optionLabel="price"
+                        optionValue="id"
+                        @change="setStockIdForItem"
+                    />
                     <InputNumber
-                        v-model="data[field]"
+                        v-else
+                        v-model="current.unit_price"
+                        inputClass="w-full"
+                        id="selling-price"
                         mode="currency"
                         currency="EGP"
+                        readonly
                     />
                 </template>
             </Column>
@@ -76,9 +94,9 @@
                 <template #body="{ field, data }">
                     %{{ data[field] }}
                 </template>
-                <template #editor="{ field, data }">
+                <template #editor>
                     <InputNumber
-                        v-model="data[field]"
+                        v-model="current.discount"
                         inputId="percent"
                         prefix="%"
                         :min="0"
@@ -101,16 +119,26 @@
                     }}
                 </template>
                 <!-- TODO:suggestion: on edit mode show dropdown with list of available stocks by expire date and available quantity and parts  -->
-                <template #editor="{ field, data }">
+                <template #editor>
                     <div class="flex flex-column">
+                        <Dropdown
+                            v-if="'expire_dates' in current.stock"
+                            v-model="current.stock_id"
+                            :options="current.stock.expire_dates"
+                            optionLabel="expire_date"
+                            optionValue="id"
+                        />
                         <InputMask
-                            id="basic"
-                            v-model="data[field]"
-                            placeholder="02/2025"
+                            v-else
+                            id="exp-date"
+                            v-model="current.expDate"
                             mask="99/9999"
                             slotChar="mm/yyyy"
+                            placeholder="02/2025"
+                            inputClass="w-full"
+                            readonly
                         />
-                        >
+
                     </div>
                 </template>
             </Column>
@@ -123,7 +151,7 @@
                     EGP {{ data[field].toFixed(2) }}
                 </template>
             </Column>
-
+            <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
@@ -306,6 +334,8 @@ const {
 } = useOrders(props.order);
 
 const selectedItem = ref();
+const editingRows = ref([])
+
 const newItem = reactive({
     product_id: null,
     code: "",
@@ -332,6 +362,8 @@ const current = reactive({
     parts_per_unit: null,
     totalPrice: 0,
     expDate: "",
+    stock: {},
+    stock_id: null,
 });
 
 const setStockIdForItem = (event) => {
@@ -364,6 +396,8 @@ const beginEdit = (event) => {
     current.parts_per_unit = item.parts_per_unit;
     current.totalPrice = item.total_amount;
     current.expDate = item.expire_date;
+    current.stock = {}
+    current.stock_id = item.stock_id
 };
 
 const updateCurrentItem = (event) => {

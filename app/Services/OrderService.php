@@ -59,6 +59,7 @@ class OrderService
             'discount_limit' => $request->discount_limit ?? $item->discount_limit,
             'total_amount' => $request->total_amount ?? $item->total_amount,
             'expire_date' => $request->expire_date ? createDateFromExpireFormat($request->expire_date) : $item->expire_date,
+            'stock_id' => $request->stock_id ? $request->stock_id : null,
         ]);
         $request->session()->flash('severity', 'success');
         $request->session()->flash('message', 'Item was updated successfully');
