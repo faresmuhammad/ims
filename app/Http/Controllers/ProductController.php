@@ -121,10 +121,8 @@ class ProductController extends Controller
                 ])) : ($stock ? new StockItemResource($stock->load('product')) : []);
             return $response;
         } else {
-            return new NewProductItemResource($product);
+            return $product ? new NewProductItemResource($product) : response(['message' => 'No Product Found'], 404);
         }
-        //TODO: search for product by code if found return product with its stocks
-        //TODO: if not found, search for stock, then return stock with product
         //TODO:suggestion: modify new stock generated code to be related to product code for faster searching
     }
 }

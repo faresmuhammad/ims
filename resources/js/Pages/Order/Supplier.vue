@@ -162,7 +162,7 @@
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
-                    @keyup.enter.exact="getNewProduct(newItem,'supplier')"
+                    @keyup.enter.exact="getProductData"
                     class="card p-3"
                     style="border-color: var(--primary-color)"
                 >
@@ -177,9 +177,7 @@
                                     id="code"
                                     :invalid="errorsNew.code !== null"
                                 />
-                                <small class="p-error">{{
-                                        errorsNew.code
-                                    }}</small>
+                                <small class="p-error">{{ errorsNew.code }}</small>
                             </div>
                         </div>
                         <div class="field col-3">
@@ -275,7 +273,6 @@
                                     slotChar="mm/yyyy"
                                     inputClass="w-full"
                                     @update:modelValue="validate($event, 'expDate','new')"
-                                    :invalid="errorsNew.expireDate.message"
                                 />
                                 <small
                                     v-if="errorsNew.expireDate"
@@ -381,8 +378,15 @@ const current = reactive({
 });
 
 
-const {errorsNew, errorsCurrent, validate} = supplierValidator(newItem, current)
+const {errorsNew, errorsCurrent, validate, validateProduct} = supplierValidator(newItem, current)
 
+
+const getProductData = () => {
+    errorsNew.code = null
+    getNewProduct(newItem, 'supplier', (message) => {
+        errorsNew.code = message
+    })
+}
 const submitNewItem = () => {
     const safeToSubmit =
         !(errorsNew.code ||
@@ -396,12 +400,20 @@ const updateCurrentItem = (event) => {
         !(errorsCurrent.code ||
             errorsCurrent.discountLimit ||
             errorsCurrent.expireDate.message);
-    updateItem(event, current, safeToUpdate, (page) => {
+    if (!safeToUpdate) {
+        Object(errorsCurrent).values().forEach((e) => {
+            console.log('errors', e)
+        })
+    }
+    updateItem(event, current, safeToUpdate, 'supplier', (page) => {
         toast.add({
             severity: page.props.flash.severity,
             summary: page.props.flash.message,
             life: 2000,
         });
+    }, (message) => {
+        errorsCurrent.code = message
+        toast.add({severity: "error", summary: message, life: 2000, group: 'tc'})
     });
 };
 

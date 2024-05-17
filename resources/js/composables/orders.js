@@ -3,6 +3,11 @@ import {formatTimeSince, formatExpireDate} from '@/helpers';
 import {router} from "@inertiajs/vue3";
 import moment from "moment";
 
+const getProduct = (code, target) => {
+    const url = target === null ? '/product/' + code : '/product/' + code + '/' + target
+    return axios.get(url)
+};
+
 export function useOrders(order) {
 
     const items = ref([])
@@ -17,23 +22,22 @@ export function useOrders(order) {
 
     onMounted(getItems)
 
-
-    const getProduct = (code, target) => {
-        const url = target === null ? '/product/' + code : '/product/' + code + '/' + target
-        return axios.get(url)
-    };
-
-    const getNewProduct = async (item, target) => {
-        const product = (await getProduct(item.code, target)).data;
-        const haveStock = 'stock' in product;
-        item.product_id = product.id;
-        item.name = product.name;
-        item.unit_price = haveStock ? 'prices' in product.stock ? product.stock.prices[0].price : product.stock.price : product.price;
-        item.expDate = haveStock ? 'expire_dates' in product.stock ? product.stock.expire_dates[0].expire_date : product.stock.expire_date : '';
-        item.parts_per_unit = product.parts_per_unit;
-        if (haveStock) {
-            item.stock = product.stock;
-            item.stock_id = 'prices' in product.stock ? product.stock.prices[0].id : product.stock.id;
+    const getNewProduct = async (item, target, onerror) => {
+        try {
+            const response = (await getProduct(item.code, target));
+            const product = response.data;
+            const haveStock = 'stock' in product;
+            item.product_id = product.id;
+            item.name = product.name;
+            item.unit_price = haveStock ? 'prices' in product.stock ? product.stock.prices[0].price : product.stock.price : product.price;
+            item.expDate = haveStock ? 'expire_dates' in product.stock ? product.stock.expire_dates[0].expire_date : product.stock.expire_date : '';
+            item.parts_per_unit = product.parts_per_unit;
+            if (haveStock) {
+                item.stock = product.stock;
+                item.stock_id = 'prices' in product.stock ? product.stock.prices[0].id : product.stock.id;
+            }
+        } catch (error) {
+            onerror(error.response.data.message)
         }
     };
     const submitItem = async (safeToSubmit, item, extraAction = () => {
@@ -68,20 +72,22 @@ export function useOrders(order) {
 
 
     //TODO: handle customer order item and stock update
-    const updateItem = async (event, current, safeToUpdate, extraAction = () => {
-    }) => {
-        console.log(safeToUpdate);
+    const updateItem = async (event, current, safeToUpdate,target, extraAction = () => {
+    },onerror) => {
         if (!safeToUpdate) return;
 
         if (event.field === "product") {
-            current.code = event.newData.product.code;
-            console.log(current);
-            const product = (await getProduct(current.code)).data;
-            current.product_id = product.id;
-            current.name = product.name;
-            current.unit_price = product.price;
-            current.parts_per_unit = product.parts_per_unit;
-            console.log(current);
+            try {
+                current.code = event.newData.product.code;
+                console.log(current);
+                const product = (await getProduct(current.code,target)).data;
+                current.product_id = product.id;
+                current.name = product.name;
+                current.unit_price = product.price;
+                current.parts_per_unit = product.parts_per_unit;
+            } catch (e) {
+                onerror(e.response.data.message)
+            }
         }
 
         if (event.field === "quantity") current.quantity = event.newData.quantity;
@@ -95,7 +101,6 @@ export function useOrders(order) {
             current.expDate = event.newData.expire_date;
 
 
-        console.log(current);
         router.put(
             "/order/item/" + current.id,
             {
@@ -165,7 +170,6 @@ export function useOrders(order) {
 
 
 export function supplierValidator(newItem, currentItem) {
-    console.log('validator',newItem,currentItem)
     const errorsNew = reactive({
         code: null,
         discountLimit: null,
@@ -233,10 +237,30 @@ export function supplierValidator(newItem, currentItem) {
         }
     }
 
+    const validateProduct = async (code, type) => {
+        type === 'new' ? errorsNew.code = null : errorsCurrent.code = null
+        try {
+            (await getProduct(code, 'supplier'))
+        } catch (e) {
+            if (type === 'new')
+                errorsNew.code = e.response.data.message
+            else
+                errorsCurrent.code = e.response.data.message
+        }
+    }
+
 
     return {
-        errorsCurrent,errorsNew, validate
+        errorsCurrent, errorsNew, validate, validateProduct
     }
+}
+
+export function customerValidator(newItem, currentItem) {
+    /**Fields to validate
+     * code -> product or sock exist
+     * quantity -> exceed the available quantity
+     *
+     */
 }
 
 export function calculateItemTotalPrice(price, quantity, parts = 0, partsPerUnit = 1, discount = 0) {
