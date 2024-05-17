@@ -11,6 +11,5 @@ export function formatDateTime(datetime) {
 
 export function formatExpireDate(date) {
     const formats = ['MM/YYYY', 'YYYY-MM-DD', 'YYYY-MM-DD hh:mm:ss']
-    const formatted = moment(date, formats).format('MM/YYYY')
-    return formatted
+    return moment(date, formats).format('MM/YYYY')
 }

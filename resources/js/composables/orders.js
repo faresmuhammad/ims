@@ -1,6 +1,7 @@
 import {onMounted, ref, reactive, toRefs} from "vue"
 import {formatTimeSince, formatExpireDate} from '@/helpers';
 import {router} from "@inertiajs/vue3";
+import moment from "moment";
 
 export function useOrders(order) {
 
@@ -67,7 +68,8 @@ export function useOrders(order) {
 
 
     //TODO: handle customer order item and stock update
-    const updateItem = async (event, current, safeToUpdate, extraAction = () => {}) => {
+    const updateItem = async (event, current, safeToUpdate, extraAction = () => {
+    }) => {
         console.log(safeToUpdate);
         if (!safeToUpdate) return;
 
@@ -162,13 +164,85 @@ export function useOrders(order) {
 }
 
 
-//TODO: add validation logic here
+export function supplierValidator(newItem, currentItem) {
+    console.log('validator',newItem,currentItem)
+    const errorsNew = reactive({
+        code: null,
+        discountLimit: null,
+        expireDate: {
+            severity: "",
+            message: null,
+        },
+    })
+    const errorsCurrent = reactive({
+        code: null,
+        discountLimit: null,
+        expireDate: {
+            severity: "",
+            message: null,
+        },
+    })
 
+    const validate = (value, field, item) => {
+        if (field === 'discount_limit') {
+            const message = "Discount limit must not reach to discount value"
+            if (item === 'new')
+                errorsNew.discountLimit = value > 0 && value >= newItem.discount ? message : null
+            else
+                errorsCurrent.discountLimit = value > 0 && value >= currentItem.discount ? message : null
+
+        }
+        if (field === 'discount') {
+            const message = "Discount limit must not reach to discount value"
+            if (item === 'new')
+                errorsNew.discountLimit = newItem.discount_limit > 0 && newItem.discount_limit >= value ? message : null;
+            else
+                errorsCurrent.discountLimit = currentItem.discount_limit > 0 && currentItem.discount_limit >= value ? message : null;
+        }
+        if (field === 'expDate') {
+            const pastDateMessage = "Expire date must be greater than today"
+            const expireSoonMessage = "Expire Date will be reached in less than 6 months"
+            const date = moment(value, 'MM/YYYY', true)
+            if (date.isValid()) {
+                if (item === 'new')
+                    errorsNew.expireDate = date < moment() ? {
+                            message: pastDateMessage,
+                            severity: "error"
+                        }
+                        : date < moment().add(6, 'months') ? {
+                            message: expireSoonMessage,
+                            severity: "warn"
+                        } : {message: null, severity: ""};
+                else
+                    errorsCurrent.expireDate = date < moment() ? {
+                            message: pastDateMessage,
+                            severity: "error"
+                        }
+                        : date < moment().add(6, 'months') ? {
+                            message: expireSoonMessage,
+                            severity: "warn"
+                        } : {message: null, severity: ""};
+            } else {
+                //FIXME: restrict year range
+                errorsNew.expireDate = {
+                    message: "Invalid date",
+                    severity: "error"
+                }
+
+            }
+        }
+    }
+
+
+    return {
+        errorsCurrent,errorsNew, validate
+    }
+}
 
 export function calculateItemTotalPrice(price, quantity, parts = 0, partsPerUnit = 1, discount = 0) {
     const discountDecimal = discount / 100;
     let totalPrice = 0;
-    if (parts == 0)
+    if (parts === 0)
         totalPrice = (price * quantity) * (1 - discountDecimal);
     else {
         const partsPerUnitChecked = partsPerUnit == null ? 1 : partsPerUnit

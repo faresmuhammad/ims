@@ -92,7 +92,7 @@
                         prefix="%"
                         :min="0"
                         :max="100"
-                        @input="checkValidCurrentItem($event.value, 'discount')"
+                        @input="validate($event.value, 'discount','current')"
                     />
                 </template>
             </Column>
@@ -103,6 +103,7 @@
             >
                 <template #body="{ field, data }">
                     %{{ data[field] }}
+                    <small class="p-error">{{ errorsCurrent.discountLimit }}</small>
                 </template>
                 <template #editor="{ field, data }">
                     <div class="flex flex-column">
@@ -112,16 +113,9 @@
                             prefix="%"
                             :min="0"
                             :max="100"
-                            @input="
-                                checkValidCurrentItem(
-                                    $event.value,
-                                    'discount_limit'
-                                )
-                            "
+                            @input="validate($event.value,'discount_limit','current')"
                         />
-                        <small class="p-error">{{
-                                errorsCurrent.discountLimit
-                            }}</small>
+                        <small class="p-error">{{ errorsCurrent.discountLimit }}</small>
                     </div>
                 </template>
             </Column>
@@ -145,19 +139,13 @@
                             placeholder="02/2025"
                             mask="99/9999"
                             slotChar="mm/yyyy"
-                            @update:modelValue="
-                                checkValidCurrentItem($event, 'expDate')
-                            "
+                            @update:modelValue="validate($event, 'expDate','current')"
                         />
                         <small
                             v-if="errorsCurrent.expireDate"
-                            :class="
-                                errorsCurrent.expireDate.severity === 'error'
-                                    ? 'p-error'
-                                    : 'text-yellow-600'
-                            "
-                        >{{ errorsCurrent.expireDate.message }}</small
-                        >
+                            :class="errorsCurrent.expireDate.severity === 'error' ? 'p-error': 'text-yellow-600'">{{
+                                errorsCurrent.expireDate.message
+                            }}</small>
                     </div>
                 </template>
             </Column>
@@ -251,9 +239,7 @@
                                     prefix="%"
                                     :min="0"
                                     :max="100"
-                                    @input="
-                                        checkValidItem($event.value, 'discount')
-                                    "
+                                    @input="validate($event.value, 'discount','new')"
                                 />
                             </div>
                         </div>
@@ -270,12 +256,7 @@
                                     prefix="%"
                                     :min="0"
                                     :max="100"
-                                    @input="
-                                        checkValidItem(
-                                            $event.value,
-                                            'discount_limit'
-                                        )
-                                    "
+                                    @input="validate($event.value,'discount_limit','new')"
                                     :invalid="errorsNew.discountLimit !== null"
                                 />
                                 <small class="p-error">{{
@@ -293,9 +274,7 @@
                                     mask="99/9999"
                                     slotChar="mm/yyyy"
                                     inputClass="w-full"
-                                    @update:modelValue="
-                                        checkValidItem($event, 'expDate')
-                                    "
+                                    @update:modelValue="validate($event, 'expDate','new')"
                                     :invalid="errorsNew.expireDate.message"
                                 />
                                 <small
@@ -306,8 +285,7 @@
                                             ? 'p-error'
                                             : 'text-yellow-600'
                                     "
-                                >{{ errorsNew.expireDate.message }}</small
-                                >
+                                >{{ errorsNew.expireDate.message }}</small>
                             </div>
                         </div>
                     </div>
@@ -338,6 +316,8 @@ import Toast from "primevue/toast";
 import {useOrders, calculateItemTotalPrice} from "@/composables/orders";
 import {formatDateTime, formatExpireDate} from "@/helpers";
 import OrderHeader from "@/Components/OrderHeader.vue";
+import moment from "moment";
+import {supplierValidator} from "../../composables/orders";
 
 const props = defineProps({
     order: Object,
@@ -400,95 +380,8 @@ const current = reactive({
     expDate: "",
 });
 
-const errorsNew = reactive({
-    code: null,
-    discountLimit: null,
-    expireDate: {
-        severity: "error",
-        message: null,
-    },
-});
 
-const errorsCurrent = reactive({
-    code: null,
-    discountLimit: null,
-    expireDate: {
-        severity: "error",
-        message: null,
-    },
-});
-
-//FIXME: fix when discount equal zero
-const checkValidItem = (value, field) => {
-    if (field === "discount_limit")
-        errorsNew.discountLimit =
-            value >= newItem.discount
-                ? "Discount limit must not reach to discount value"
-                : null;
-    else if (field === "discount")
-        errorsNew.discountLimit =
-            newItem.discount_limit >= value
-                ? "Discount limit must not reach to discount value"
-                : null;
-    else if (field === "expDate") {
-        const dateParts = value.split("/");
-        console.log(dateParts);
-        const date = new Date(
-            Number(dateParts[1]),
-            Number(dateParts[0]) - 1,
-            1
-        );
-        //TODO: get the date offset from settings
-        errorsNew.expireDate.message =
-            date < new Date()
-                ? "Expire date must be greater than today"
-                : date < new Date().setMonth(new Date().getMonth() + 6)
-                    ? "Expire Date will be reached in less than 6 months"
-                    : null;
-        errorsNew.expireDate.severity =
-            date < new Date()
-                ? "error"
-                : date < new Date().setMonth(new Date().getMonth() + 6)
-                    ? "warn"
-                    : "";
-    }
-    console.log(errorsNew);
-};
-//FIXME: fix when discount equal zero
-const checkValidCurrentItem = (value, field) => {
-    if (field === "discount_limit")
-        errorsCurrent.discountLimit =
-            value >= current.discount
-                ? "Discount limit must not reach to discount value"
-                : null;
-    else if (field === "discount")
-        errorsCurrent.discountLimit =
-            current.discount_limit >= value
-                ? "Discount limit must not reach to discount value"
-                : null;
-    else if (field === "expDate") {
-        const dateParts = value.split("/");
-        console.log(dateParts);
-        const date = new Date(
-            Number(dateParts[1]),
-            Number(dateParts[0]) - 1,
-            1
-        );
-        //TODO: get the date offset from settings
-        errorsCurrent.expireDate.message =
-            date < new Date()
-                ? "Expire date must be greater than today"
-                : date < new Date().setMonth(new Date().getMonth() + 6)
-                    ? "Expire Date will be reached in less than 6 months"
-                    : null;
-        errorsCurrent.expireDate.severity =
-            date < new Date()
-                ? "error"
-                : date < new Date().setMonth(new Date().getMonth() + 6)
-                    ? "warn"
-                    : "";
-    }
-};
+const {errorsNew, errorsCurrent, validate} = supplierValidator(newItem, current)
 
 const submitNewItem = () => {
     const safeToSubmit =
