@@ -27,7 +27,13 @@ class NewProductItemResource extends JsonResource
             if ($stocks->count() > 1) {
                 $prices = [];
                 $expireDates = [];
+                $meta = [];
                 foreach ($stocks as $stock) {
+                    $meta[] = [
+                        'id' => $stock->id,
+                        'available_quantity' => $stock->available_quantity,
+                        'discount_limit' => $stock->discount_limit
+                    ];
                     $prices[] = [
                         'id' => $stock->id,
                         'price' => $stock->price,
@@ -43,6 +49,7 @@ class NewProductItemResource extends JsonResource
                 }
                 $stockRelatedFields = [
                     'stock' => [
+                        'meta' => $meta,
                         'prices' => $prices,
                         'expire_dates' => $expireDates,
                     ]
@@ -55,6 +62,7 @@ class NewProductItemResource extends JsonResource
                         'expire_date' => formatExpireDate($stocks[0]->expire_date),
                         'available_quantity' => $stocks[0]->available_quantity,
                         'available_parts' => $stocks[0]->available_parts,
+                        'discount_limit' => $stocks[0]->discount_limit
                     ]
                 ];
             }

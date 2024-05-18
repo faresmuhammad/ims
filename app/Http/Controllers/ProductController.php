@@ -118,7 +118,7 @@ class ProductController extends Controller
                 $product->load(['stocks' => function (Builder $query) {
                     $query->available()->orderByDesc('expire_date');
                 }
-                ])) : ($stock ? new StockItemResource($stock->load('product')) : []);
+                ])) : ($stock ? new StockItemResource($stock->load('product')) : response(['message' => 'No Product or Stock Found'],404));
             return $response;
         } else {
             return $product ? new NewProductItemResource($product) : response(['message' => 'No Product Found'], 404);

@@ -37,6 +37,11 @@ export function useOrders(order) {
                 item.stock_id = 'prices' in product.stock ? product.stock.prices[0].id : product.stock.id;
             }
         } catch (error) {
+            item.product_id = null
+            item.name = ''
+            item.unit_price = 0
+            item.expDate = ''
+            item.stock = {}
             onerror(error.response.data.message)
         }
     };
@@ -237,31 +242,12 @@ export function supplierValidator(newItem, currentItem) {
         }
     }
 
-    const validateProduct = async (code, type) => {
-        type === 'new' ? errorsNew.code = null : errorsCurrent.code = null
-        try {
-            (await getProduct(code, 'supplier'))
-        } catch (e) {
-            if (type === 'new')
-                errorsNew.code = e.response.data.message
-            else
-                errorsCurrent.code = e.response.data.message
-        }
-    }
-
 
     return {
-        errorsCurrent, errorsNew, validate, validateProduct
+        errorsCurrent, errorsNew, validate
     }
 }
 
-export function customerValidator(newItem, currentItem) {
-    /**Fields to validate
-     * code -> product or sock exist
-     * quantity -> exceed the available quantity
-     *
-     */
-}
 
 export function calculateItemTotalPrice(price, quantity, parts = 0, partsPerUnit = 1, discount = 0) {
     const discountDecimal = discount / 100;

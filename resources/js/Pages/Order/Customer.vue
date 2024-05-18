@@ -155,7 +155,9 @@
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
-                    @keyup.enter.exact="getNewProduct(newItem,'customer')"
+                    @keyup.enter.exact="errorsNew.code = null;getNewProduct(newItem,'customer',(message)=>{
+                        errorsNew.code = message
+                    })"
                     class="card p-3"
                     style="border-color: var(--primary-color)"
                 >
@@ -169,11 +171,7 @@
                                     class="w-full"
                                     id="code"
                                 />
-                                <!-- TODO: implement validation -->
-                                <!-- :invalid="errorsNew.code !== null"
-                                <small class="p-error">{{
-                                    errorsNew.code
-                                }}</small> -->
+                                <small class="p-error">{{ errorsNew.code }}</small>
                             </div>
                         </div>
                         <div class="field col-3">
@@ -189,14 +187,26 @@
                         </div>
                         <div class="field col-1 m-0">
                             <div class="flex flex-column gap-2">
-                                <!-- TODO: track user input, if it exceeded the quantity in stock show a warning popup-->
                                 <label for="quantity">Quantity</label>
                                 <InputNumber
                                     v-model="newItem.quantity"
                                     inputClass="w-full"
                                     id="quantity"
                                     inputId="integer"
+                                    @input="event => {
+                                        if(Object.keys(newItem.stock).length > 0){
+                                            if('meta' in newItem.stock){
+                                                const selectedStock = newItem.stock.meta.find(stock => stock.id === newItem.stock_id)
+                                                const message = 'Available quantity is ' + selectedStock.available_quantity
+                                                errorsNew.quantity = event.value > selectedStock.available_quantity ? message : null
+                                            }else{
+                                                const message = 'Available quantity is ' + newItem.stock.available_quantity
+                                                errorsNew.quantity = event.value > newItem.stock.available_quantity ? message : null
+                                            }
+                                        }
+                                    }"
                                 />
+                                <small class="p-error">{{ errorsNew.quantity }}</small>
                             </div>
                         </div>
                         <div class="field col-1">
@@ -213,7 +223,6 @@
                         </div>
                         <div class="field col-1">
                             <div class="flex flex-column gap-2">
-                                <!-- TODO:suggestion: show list of prices for available stocks if there are different prices -->
                                 <label for="selling-price">Selling Price</label>
                                 <Dropdown
                                     v-if="'prices' in newItem.stock"
@@ -237,7 +246,6 @@
                             </div>
                         </div>
                         <div class="field col-1">
-                            <!-- TODO: validate not to exceed stock discount limit -->
                             <div class="flex flex-column gap-2">
                                 <label for="discount">Discount</label>
                                 <InputNumber
@@ -248,16 +256,24 @@
                                     prefix="%"
                                     :min="0"
                                     :max="100"
+                                    @input="event => {
+                                            if(Object.keys(newItem.stock).length > 0){
+                                                if('meta' in newItem.stock){
+                                                    const selectedStock = newItem.stock.meta.find(stock => stock.id === newItem.stock_id)
+                                                    const message = 'Discount mustn\'t exceed discount limit -> ' + selectedStock.discount_limit
+                                                    errorsNew.discount = event.value > selectedStock.discount_limit ? message : null
+                                                }else{
+                                                    const message = 'Discount mustn\'t exceed discount limit -> ' + newItem.stock.discount_limit
+                                                    errorsNew.discount = event.value > newItem.stock.discount_limit ? message : null
+                                                }
+                                        }
+
+                                    }"
                                 />
-                                <!-- TODO: implement validation -->
-                                <!-- @input="
-                                        checkValidItem($event.value, 'discount')
-                                    " -->
+                                <small class="p-error">{{ errorsNew.discount }}</small>
                             </div>
                         </div>
                         <div class="field col-1">
-                            <!-- TODO:suggestion: if product code entered, show dropdown with list of available stocks by expire date (if different expiredates) and available quantity and parts  -->
-                            <!-- TODO:suggestion: if stock code entered, show the same above with selected expire date -->
                             <div class="flex flex-column gap-2">
                                 <label for="exp-date">Exp. Date</label>
                                 <Dropdown
@@ -278,21 +294,7 @@
                                     inputClass="w-full"
                                     readonly
                                 />
-                                <!-- TODO: implement validation -->
-                                <!-- @update:modelValue="
-                                        checkValidItem($event, 'expDate')
-                                    "
-                                    :invalid="errorsNew.expireDate.message" -->
-                                <!-- <small
-                                    v-if="errorsNew.expireDate"
-                                    :class="
-                                        errorsNew.expireDate.severity ===
-                                        'error'
-                                            ? 'p-error'
-                                            : 'text-yellow-600'
-                                    "
-                                    >{{ errorsNew.expireDate.message }}</small
-                                > -->
+
                             </div>
                         </div>
                     </div>
@@ -365,6 +367,17 @@ const current = reactive({
     stock: {},
     stock_id: null,
 });
+
+const errorsNew = reactive({
+    code: null,
+    quantity: null,
+    discount: null
+})
+const errorsCurrent = reactive({
+    code: null,
+    quantity: null,
+    discount: null
+})
 
 const setStockIdForItem = (event) => {
     newItem.unit_price = newItem.stock.prices.find(

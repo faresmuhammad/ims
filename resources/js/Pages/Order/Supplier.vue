@@ -378,7 +378,7 @@ const current = reactive({
 });
 
 
-const {errorsNew, errorsCurrent, validate, validateProduct} = supplierValidator(newItem, current)
+const {errorsNew, errorsCurrent, validate} = supplierValidator(newItem, current)
 
 
 const getProductData = () => {
@@ -391,7 +391,7 @@ const submitNewItem = () => {
     const safeToSubmit =
         !(errorsNew.code ||
             errorsNew.discountLimit ||
-            errorsNew.expireDate.message);
+            (errorsNew.expireDate.message && errorsNew.expireDate.severity === 'error'));
     submitItem(safeToSubmit, newItem);
 };
 
@@ -399,7 +399,7 @@ const updateCurrentItem = (event) => {
     const safeToUpdate =
         !(errorsCurrent.code ||
             errorsCurrent.discountLimit ||
-            errorsCurrent.expireDate.message);
+            (errorsCurrent.expireDate.message && errorsCurrent.expireDate.severity === 'error'));
     if (!safeToUpdate) {
         Object(errorsCurrent).values().forEach((e) => {
             console.log('errors', e)
