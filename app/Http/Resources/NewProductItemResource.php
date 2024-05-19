@@ -15,12 +15,6 @@ class NewProductItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         $stockRelatedFields = [];
-        /*
-         * [
-         *     'prices' => array of objects { stock_id, price, A. quantity, A. parts },
-         *     'expire_dates' => array of objects { stock_id, expire_date, A. quantity, A. parts },
-         * ]
-         * */
         if ($this->relationLoaded('stocks')) {
             $stocks = $this->stocks;
 

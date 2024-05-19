@@ -1,7 +1,8 @@
 <template>
-    <Head :title="`Customer: ${order ? order.reference_code : 'No Order'}`"/>
+    <Head :title="`Return: ${order ? order.reference_code : 'No Order'}`"/>
+
     <div class="card m-3">
-        <order-header title="Customer" :order="order"/>
+        <order-header title="Return" :order="order"/>
 
         <DataTable
             v-model:selection="selectedItem"
@@ -25,8 +26,8 @@
                 <template #body="{ field, data }">
                     {{ data[field].code }}
                 </template>
-                <template #editor="{ field, data }">
-                    <InputText v-model="current.code" @keyup.enter.exact="getNewProduct(current,'customer')"/>
+                <template #editor>
+                    <InputText v-model="current.code" @keyup.enter.exact="getNewProduct(current,'return')"/>
                 </template>
             </Column>
             <Column
@@ -102,8 +103,6 @@
                         :min="0"
                         :max="100"
                     />
-                    <!-- TODO: implement validation-->
-                    <!-- @input="checkValidCurrentItem($event.value, 'discount')" -->
                 </template>
             </Column>
             <Column
@@ -118,7 +117,6 @@
                             : "Empty Exp. Date"
                     }}
                 </template>
-                <!-- TODO:suggestion: on edit mode show dropdown with list of available stocks by expire date and available quantity and parts  -->
                 <template #editor>
                     <div class="flex flex-column">
                         <Dropdown
@@ -155,7 +153,7 @@
             <template #footer>
                 <div
                     @keydown.ctrl.enter="submitNewItem"
-                    @keyup.enter.exact="errorsNew.code = null;getNewProduct(newItem,'customer',(message)=>{
+                    @keyup.enter.exact="errorsNew.code = null;getNewProduct(newItem,'return',(message)=>{
                         errorsNew.code = message
                     })"
                     class="card p-3"
@@ -193,26 +191,12 @@
                                     inputClass="w-full"
                                     id="quantity"
                                     inputId="integer"
-                                    @input="event => {
-                                        if(Object.keys(newItem.stock).length > 0){
-                                            if('meta' in newItem.stock){
-                                                const selectedStock = newItem.stock.meta.find(stock => stock.id === newItem.stock_id)
-                                                const message = 'Available quantity is ' + selectedStock.available_quantity
-                                                errorsNew.quantity = event.value > selectedStock.available_quantity ? message : null
-                                            }else{
-                                                const message = 'Available quantity is ' + newItem.stock.available_quantity
-                                                errorsNew.quantity = event.value > newItem.stock.available_quantity ? message : null
-                                            }
-                                        }
-                                    }"
                                 />
-                                <small class="p-error">{{ errorsNew.quantity }}</small>
                             </div>
                         </div>
                         <div class="field col-1">
                             <div class="flex flex-column gap-2">
                                 <label for="parts">Parts</label>
-                                <!-- TODO: track user input, if it exceeded the parts per unit show a warning popup with action to add the number of parts per unit to quantity and set to parts the remaining -->
                                 <InputNumber
                                     v-model="newItem.parts"
                                     inputClass="w-full"
@@ -231,7 +215,17 @@
                                     optionLabel="price"
                                     optionValue="id"
                                     @change="setStockIdForItem"
-                                />
+                                >
+                                    <template #value>
+                                        {{ newItem.stock.prices.find(price => price.id === newItem.stock_id).price}}
+                                    </template>
+                                    <template #option="slotProps">
+                                        <div class="flex justify-content-between w-full">
+                                            <div class=" align-items-center">{{ slotProps.option.price}}</div>
+                                            <div class=" align-items-center">{{ slotProps.option.available_quantity}}</div>
+                                        </div>
+                                    </template>
+                                </Dropdown>
                                 <InputNumber
                                     v-else
                                     v-model="newItem.unit_price"
@@ -256,21 +250,7 @@
                                     prefix="%"
                                     :min="0"
                                     :max="100"
-                                    @input="event => {
-                                            if(Object.keys(newItem.stock).length > 0){
-                                                if('meta' in newItem.stock){
-                                                    const selectedStock = newItem.stock.meta.find(stock => stock.id === newItem.stock_id)
-                                                    const message = 'Discount mustn\'t exceed discount limit -> ' + selectedStock.discount_limit
-                                                    errorsNew.discount = event.value > selectedStock.discount_limit ? message : null
-                                                }else{
-                                                    const message = 'Discount mustn\'t exceed discount limit -> ' + newItem.stock.discount_limit
-                                                    errorsNew.discount = event.value > newItem.stock.discount_limit ? message : null
-                                                }
-                                        }
-
-                                    }"
                                 />
-                                <small class="p-error">{{ errorsNew.discount }}</small>
                             </div>
                         </div>
                         <div class="field col-1">
@@ -283,7 +263,17 @@
                                     optionLabel="expire_date"
                                     optionValue="id"
                                     @change="setStockIdForItem"
-                                />
+                                >
+                                    <template #value>
+                                        {{ newItem.stock.expire_dates.find(date => date.id === newItem.stock_id).expire_date}}
+                                    </template>
+                                    <template #option="slotProps">
+                                        <div class="flex justify-content-between w-full">
+                                            <div class=" align-items-center">{{ slotProps.option.expire_date}}</div>
+                                            <div class=" align-items-center">{{ slotProps.option.available_quantity}}</div>
+                                        </div>
+                                    </template>
+                                </Dropdown>
                                 <InputMask
                                     v-else
                                     id="exp-date"
@@ -316,15 +306,15 @@
 </template>
 
 <script setup>
-import {Head, router} from "@inertiajs/vue3";
-import {ref, reactive} from "vue";
+import {Head, router} from '@inertiajs/vue3';
 import OrderHeader from "@/Components/OrderHeader.vue";
+import {reactive, ref} from "vue";
 import {useOrders} from "@/composables/orders";
 import {formatExpireDate} from "@/helpers";
 
 const props = defineProps({
     order: Object,
-});
+})
 
 const {
     items,
@@ -367,16 +357,8 @@ const current = reactive({
     stock: {},
     stock_id: null,
 });
-
 const errorsNew = reactive({
     code: null,
-    quantity: null,
-    discount: null
-})
-const errorsCurrent = reactive({
-    code: null,
-    quantity: null,
-    discount: null
 })
 
 const setStockIdForItem = (event) => {
@@ -387,11 +369,11 @@ const setStockIdForItem = (event) => {
         date => date.id === event.value
     ).expire_date;
 };
-
 const submitNewItem = () => {
     const safeToSubmit = true; //TODO: add validation
     submitItem(safeToSubmit, newItem);
 };
+
 
 const beginEdit = (event) => {
     //TODO: clear errors
@@ -426,7 +408,7 @@ const updateCurrentItem = (event) => {
 
 const completeOrder = () => {
     console.log(items.value)
-    router.put('/order/customer/complete', {
+    router.put('/order/return/complete', {
             order_id: props.order.id,
             items: items.value
         },

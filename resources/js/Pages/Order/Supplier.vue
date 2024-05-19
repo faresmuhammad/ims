@@ -1,5 +1,5 @@
 <template>
-    <Head :title="order ? 'Order #' + order.reference_code : 'No Order'"/>
+    <Head :title="`Supplier: ${order ? order.reference_code : 'No Order'}`"/>
     <div class="card m-3">
         <!-- Header -->
         <Toast/>

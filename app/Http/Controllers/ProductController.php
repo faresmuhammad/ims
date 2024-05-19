@@ -114,12 +114,17 @@ class ProductController extends Controller
         $product = Product::where('code', $code)->first();
         $stock = Stock::where('code', $code)->first();
         if ($for == 'customer') {
-            $response = $product ? new NewProductItemResource(
+            return $product ? new NewProductItemResource(
                 $product->load(['stocks' => function (Builder $query) {
                     $query->available()->orderByDesc('expire_date');
                 }
-                ])) : ($stock ? new StockItemResource($stock->load('product')) : response(['message' => 'No Product or Stock Found'],404));
-            return $response;
+                ])) : ($stock ? new StockItemResource($stock->load('product')) : response(['message' => 'No Product or Stock Found'], 404));
+        } elseif ($for == 'return') {
+            return $product ? new NewProductItemResource(
+                $product->load(['stocks' => function (Builder $query) {
+                    $query->orderByDesc('expire_date');
+                }])
+            ) : ($stock ? new StockItemResource($stock->load('product')) : response(['message' => 'No Product or Stock Found'], 404));
         } else {
             return $product ? new NewProductItemResource($product) : response(['message' => 'No Product Found'], 404);
         }

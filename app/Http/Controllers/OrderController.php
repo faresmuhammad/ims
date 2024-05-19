@@ -22,7 +22,9 @@ class OrderController extends Controller
                 'suppliers' => Supplier::select('id', 'name')->get()
             ]);
         } elseif ($type == 'return') {
-            return $order;
+            return Inertia::render('Order/Return', [
+                'order' => $order,
+            ]);
         } else {
             return Inertia::render('Order/Customer', [
                 'order' => $order
@@ -48,7 +50,6 @@ class OrderController extends Controller
     {
         $service->updateOrder($order, $request);
     }
-
 
 
     public function newItem(Order $order, Request $request, OrderService $service)
