@@ -26,4 +26,12 @@ class StockService
         $stock->save();
     }
 
+    public function updateStockDueToReturnOrder(Stock $stock, OrderItem $item)
+    {
+        $stock->available_quantity += $item->quantity;
+        $stock->available_parts += $item->parts;
+
+        $stock->save();
+    }
+
 }

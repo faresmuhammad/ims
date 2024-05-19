@@ -114,4 +114,22 @@ class OrderService
             'message' => 'Order completed successfully'
         ]);
     }
+
+    public function completeReturnOrder(Request $request, StockService $stockService)
+    {
+        \DB::transaction(function () use ($request, $stockService) {
+            $items = OrderItem::hydrate($request->items);
+            foreach ($items as $item) {
+                $stock = Stock::find($item->stock_id);
+                $stockService->updateStockDueToReturnOrder($stock, $item);
+            }
+            $order = Order::find($request->order_id);
+            $order->update([
+                'completed' => true
+            ]);
+        });
+        return response()->json([
+            'message' => 'Order completed successfully'
+        ]);
+    }
 }

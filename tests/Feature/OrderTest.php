@@ -130,10 +130,31 @@ class OrderTest extends TestCase
             'items' => [$item->toArray()],
             'order_id' => $order->id,
         ]);
-        dump($stock->available_parts);
         $stock->refresh();
-        dump($stock->available_parts);
         $this->assertEquals(3, $stock->available_quantity);
         $this->assertEquals(2, $stock->available_parts);
+    }
+
+    public function test_that_completing_return_order_with_quantity_increase_the_quantity_and_parts_to_stock()
+    {
+        $user = User::factory()->create();
+        $order = Order::factory()->create();
+        $stock = Stock::factory()->create([
+            'available_quantity' => 2,
+            'available_parts' => 0,
+        ]);
+        $item = OrderItem::factory()->create([
+            'quantity' => 2,
+            'parts' => 3,
+            'order_id' => $order->id,
+            'stock_id' => $stock->id,
+        ]);
+        $this->actingAs($user)->put('/order/return/complete', [
+            'items' => [$item->toArray()],
+            'order_id' => $order->id,
+        ]);
+        $stock->refresh();
+        $this->assertEquals(4, $stock->available_quantity);
+        $this->assertEquals(3, $stock->available_parts);
     }
 }

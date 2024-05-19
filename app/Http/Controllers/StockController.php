@@ -46,5 +46,10 @@ class StockController extends Controller
         return $service->completeCustomerOrder($request, $stockService);
     }
 
+    public function return(Request $request, OrderService $service, StockService $stockService)
+    {
+        return $service->completeReturnOrder($request, $stockService);
+    }
+
     //TODO: delete stock
 }

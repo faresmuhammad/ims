@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/order/supplier/complete', [StockController::class, 'store']);
     Route::put('/order/customer/complete', [StockController::class, 'order']);
+    Route::put('/order/return/complete', [StockController::class, 'return']);
     //Stocks
     Route::put('/stocks/{stock:code}', [StockController::class, 'update']);
 
