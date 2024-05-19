@@ -32,4 +32,12 @@ class Order extends Model
     {
         $query->where('completed', true);
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::updating(function (Order $order) {
+            $order->total_amount = $order->items->sum('total_amount');
+        });
+    }
 }
