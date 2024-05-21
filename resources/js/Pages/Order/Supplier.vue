@@ -378,8 +378,9 @@ const current = reactive({
 });
 
 
-const {errorsNew, errorsCurrent, validate} = supplierValidator(newItem, current)
+const {errorsNew, errorsCurrent, validate, getExpireOffset} = supplierValidator(newItem, current)
 
+onMounted(getExpireOffset)
 
 const getProductData = () => {
     errorsNew.code = null

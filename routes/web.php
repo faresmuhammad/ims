@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::put('shift/end', [ShiftController::class, 'end']);
 
     //Settings
-});
     Route::get('settings',[SettingController::class,'index']);
+    Route::get('settings/{setting:key}',[SettingController::class,'get']);
+});
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\SettingResource;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,5 +15,10 @@ class SettingController extends Controller
         return Inertia::render('Settings',[
             'settings' => $settings
         ]);
+    }
+
+    public function get(Setting  $setting)
+    {
+        return new SettingResource($setting);
     }
 }

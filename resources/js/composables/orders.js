@@ -77,15 +77,15 @@ export function useOrders(order) {
 
 
     //TODO: handle customer order item and stock update
-    const updateItem = async (event, current, safeToUpdate,target, extraAction = () => {
-    },onerror) => {
+    const updateItem = async (event, current, safeToUpdate, target, extraAction = () => {
+    }, onerror) => {
         if (!safeToUpdate) return;
 
         if (event.field === "product") {
             try {
                 current.code = event.newData.product.code;
                 console.log(current);
-                const product = (await getProduct(current.code,target)).data;
+                const product = (await getProduct(current.code, target)).data;
                 current.product_id = product.id;
                 current.name = product.name;
                 current.unit_price = product.price;
@@ -191,6 +191,11 @@ export function supplierValidator(newItem, currentItem) {
             message: null,
         },
     })
+    const getExpireOffset = async () => {
+        const setting = (await axios.get('/settings/Expire Date Warning Offset')).data
+        expireOffset.value = setting.value
+    }
+    const expireOffset = ref(0)
 
     const validate = (value, field, item) => {
         if (field === 'discount_limit') {
@@ -210,7 +215,7 @@ export function supplierValidator(newItem, currentItem) {
         }
         if (field === 'expDate') {
             const pastDateMessage = "Expire date must be greater than today"
-            const expireSoonMessage = "Expire Date will be reached in less than 6 months"
+            const expireSoonMessage = `Expire Date will be reached in less than ${expireOffset.value} months`
             const date = moment(value, 'MM/YYYY', true)
             if (date.isValid()) {
                 if (item === 'new')
@@ -218,7 +223,7 @@ export function supplierValidator(newItem, currentItem) {
                             message: pastDateMessage,
                             severity: "error"
                         }
-                        : date < moment().add(6, 'months') ? {
+                        : date < moment().add(expireOffset.value, 'months') ? {
                             message: expireSoonMessage,
                             severity: "warn"
                         } : {message: null, severity: ""};
@@ -227,7 +232,7 @@ export function supplierValidator(newItem, currentItem) {
                             message: pastDateMessage,
                             severity: "error"
                         }
-                        : date < moment().add(6, 'months') ? {
+                        : date < moment().add(expireOffset.value, 'months') ? {
                             message: expireSoonMessage,
                             severity: "warn"
                         } : {message: null, severity: ""};
@@ -244,7 +249,7 @@ export function supplierValidator(newItem, currentItem) {
 
 
     return {
-        errorsCurrent, errorsNew, validate
+        errorsCurrent, errorsNew, validate, getExpireOffset
     }
 }
 
