@@ -124,36 +124,7 @@ Table Stocks{
   discount_limit float
   price double
 }
-//Questions:
 
-//[most logic] the price of a part is the price of the product divided by the number of parts
-  //set the number of parts per unit
-  //if a part is ordered, decrease the available quantity and set the available parts to the number of parts per nit minus - the ordered parts
-  //if a part is returned, 
-    //if the available parts after the return is equal to the number of parts per unit, increase the available quantity and set the available parts to 0
-    //if the available parts after the return is less than the number of parts per unit, increase the available parts
-
-//I think when amr inserts a price for the stock he will insert into the price column then insert the discount
-//in the backend in case of supplier total price calculated as [price * (1 - discount)] --> that is what amr will pay to the supplier
-//in case of customer, the total price will be [price * (1 - discount)] --> that is what the customer will pay
-// supplier
-// name    |    unit price    |    customer price    |    discount    |    total price
-// pro1    |    -             |    -                 |    -           |    -
-// // 
-// customer
-// name    |    unit price    |    discount    |    total price
-// pro1    |    -             |    -           |    -         
-// // 
-// return
-// name    |    unit price    |    discount    |    total price
-// pro1    |    -             |    -           |    -         
-
-
-
-//product
-
-//how discount applied to the stock for supplier and for the customer
-//how discount applied in case of return
 
 Table Notes{
   id bigint [pk]
@@ -170,4 +141,20 @@ Table Shifts{
     real_amount double [null]
     difference double [null]
     user_id bigint [ref: > Users.id]
+
+enum SettingType{
+  integer
+  date
+  date_range
+}
+
+Table Settings{
+  id bigint [pk]
+  key string [unique]
+  category string [null]
+  value_integer int [null]
+  value_date date [null]
+  value_start_date date [null]
+  value_end_date date [null]
+  value_type SettingType [not null]
 }
