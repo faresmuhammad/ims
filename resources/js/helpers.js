@@ -4,9 +4,8 @@ export function formatTimeSince(datetime) {
     return moment(datetime).fromNow()
 }
 
-export function formatDateTime(datetime) {
-    const date = new Date(datetime)
-    return date.toLocaleString()
+export function formatDateTime(datetime, format) {
+    return moment(datetime).format(format)
 }
 
 export function formatExpireDate(date) {

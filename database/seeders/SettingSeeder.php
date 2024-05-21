@@ -14,50 +14,50 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
         $dashboardSettings = [
-            'cards_section_date' => now(),
-            'all_dashboard_date' => now(),
-            'expire_date_months_offset' => 3,
-            'best_selling_sold_count' => 10,
-            'low_stock_offset' => 2
+            'Cards Section Date or Date Range' => now(),
+            'All Dashboard Date or Date Range' => now(),
+            'Expire Date Months Offset' => 3,
+            'Best Selling Sold Count' => 10,
+            'Low Stock Offset' => 2
         ];
 
         $orderSettings = [
-            'expire_date_warning' => 6
+            'Expire Date Warning Offset' => 6
         ];
         Setting::create([
-            'key' => 'cards_section_date',
-            'value_date' => $dashboardSettings['cards_section_date'],
-            'category' => 'dashboard',
+            'key' => 'Cards Section Date or Date Range',
+            'value_date' => $dashboardSettings['Cards Section Date or Date Range'],
+            'category' => 'Dashboard',
             'value_type' => 'date'
         ]);
         Setting::create([
-            'key' => 'all_dashboard_date',
-            'value_date' => $dashboardSettings['all_dashboard_date'],
-            'category' => 'dashboard',
+            'key' => 'All Dashboard Date or Date Range',
+            'value_date' => $dashboardSettings['All Dashboard Date or Date Range'],
+            'category' => 'Dashboard',
             'value_type' => 'date'
         ]);
         Setting::create([
-            'key' => 'expire_date_months_offset',
-            'value_integer' => $dashboardSettings['expire_date_months_offset'],
-            'category' => 'dashboard',
+            'key' => 'Expire Date Months Offset',
+            'value_integer' => $dashboardSettings['Expire Date Months Offset'],
+            'category' => 'Dashboard',
             'value_type' => 'integer'
         ]);
         Setting::create([
-            'key' => 'best_selling_sold_count',
-            'value_integer' => $dashboardSettings['best_selling_sold_count'],
-            'category' => 'dashboard',
+            'key' => 'Best Selling Sold Count',
+            'value_integer' => $dashboardSettings['Best Selling Sold Count'],
+            'category' => 'Dashboard',
             'value_type' => 'integer'
         ]);
         Setting::create([
-            'key' => 'low_stock_offset',
-            'value_integer' => $dashboardSettings['low_stock_offset'],
-            'category' => 'dashboard',
+            'key' => 'Low Stock Offset',
+            'value_integer' => $dashboardSettings['Low Stock Offset'],
+            'category' => 'Dashboard',
             'value_type' => 'integer'
         ]);
         Setting::create([
-            'key' => 'expire_date_warning',
-            'value_integer' => $orderSettings['expire_date_warning'],
-            'category' => 'order',
+            'key' => 'Expire Date Warning Offset',
+            'value_integer' => $orderSettings['Expire Date Warning Offset'],
+            'category' => 'Order',
             'value_type' => 'integer'
         ]);
     }

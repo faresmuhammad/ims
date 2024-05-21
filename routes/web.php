@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SettingController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -60,5 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::post('shift/start', [ShiftController::class, 'start']);
     Route::put('shift/end', [ShiftController::class, 'end']);
 
+    //Settings
 });
+    Route::get('settings',[SettingController::class,'index']);
 
