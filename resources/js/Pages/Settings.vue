@@ -11,7 +11,8 @@
             <div v-for="(items, key) in settings">
                 <h4>{{ key }}</h4>
                 <ul class="list-none">
-                    <setting-item v-for="setting in items" :key="setting.key" :setting="setting" :edit="editMode" v-model:value="changedSettings"/>
+                    <setting-item v-for="setting in items" :key="setting.key" :setting="setting" :edit="editMode"
+                                  v-model:value="changedSettings[setting.key]"/>
                 </ul>
             </div>
             <div class="flex justify-content-end gap-4" v-if="editMode">
@@ -27,15 +28,32 @@
 import {Head} from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SettingItem from "@/Components/SettingItem.vue";
-import {ref} from "vue";
+import {reactive, ref} from "vue";
 
 const props = defineProps({
     settings: Object
 })
 const editMode = ref(false)
-const changedSettings = ref()
+const changedSettings = reactive({})
 
 const updateSettings = () => {
-
+    console.log(changedSettings)
+    const requests = Object.keys(changedSettings).map((key) => {
+        return axios.put(`/settings/${key}`, {
+            value: changedSettings[key],
+        })
+            .then((response) => {
+                console.log(`${key} setting is updated`)
+            }).catch(error => {
+                console.log(error)
+            });
+    })
+    Promise.all(requests)
+        .then((responses) => {
+            console.log('All requests are done')
+        })
+        .catch((errors) => {
+            console.log('Error occurred while updating settings', errors)
+        })
 }
 </script>

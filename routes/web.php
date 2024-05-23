@@ -64,5 +64,6 @@ Route::middleware('auth')->group(function () {
     //Settings
     Route::get('settings',[SettingController::class,'index']);
     Route::get('settings/{setting:key}',[SettingController::class,'get']);
+    Route::put('settings/{setting:key}',[SettingController::class,'update']);
 });
 
