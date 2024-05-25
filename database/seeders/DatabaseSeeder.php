@@ -16,14 +16,11 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
 
-        User::create([
-            'username' => 'fares',
-            'email' => 'test@example.com',
-            'password' => Hash::make('123')
-        ]);
 
         $this->call(
             [
+                PermissionSeeder::class,
+                UserSeeder::class,
                 CategorySeeder::class,
                 ProductSeeder::class,
                 SupplierSeeder::class
