@@ -23,7 +23,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-
+        $this->authorize('see all products');
         return Inertia::render('Products', [
             'products' => Product::all(),
             'categories' => Category::select('id', 'name')->get()
@@ -35,6 +35,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('add product');
         try {
             Product::create([
                 'code' => $request->code,
@@ -59,6 +60,7 @@ class ProductController extends Controller
      */
     public function show($slug)
     {
+        $this->authorize('see product info');
         $product = new ProductResource(Product::where('slug', $slug)->with(['category:id,name', 'stocks'])->first());
         return Inertia::render('ProductInfo', [
             'product' => $product,
@@ -72,6 +74,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        $this->authorize('edit product');
         try {
             $product->update([
                 'name' => $request->name,
@@ -94,6 +97,7 @@ class ProductController extends Controller
      */
     public function destroy(Request $request, Product $product)
     {
+        $this->authorize('delete product');
         try {
             $product->delete();
             return redirect('/products');
@@ -106,6 +110,7 @@ class ProductController extends Controller
 
     public function import(Request $request)
     {
+        $this->authorize('import products');
         Excel::import(new ProductsImport(), $request->file('products'));
     }
 

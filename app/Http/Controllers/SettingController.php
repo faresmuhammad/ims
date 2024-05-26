@@ -25,6 +25,7 @@ class SettingController extends Controller
 
     public function update(Request $request, Setting $setting)
     {
+        $this->authorize('edit settings');
         $typeOfValue = $setting->typeOfValue;
         if (is_null($typeOfValue))
             return response([], 400);

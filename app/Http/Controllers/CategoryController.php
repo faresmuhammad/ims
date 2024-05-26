@@ -13,7 +13,7 @@ class CategoryController extends Controller
     public function index()
     {
         //TODO:: return the related data needed for categories such as number of products
-        
+        $this->authorize('see all categories info');
         return Inertia::render('Categories', [
             'categories' => Category::where('parent_id', null)->with('subcategories')->get()
         ]);
@@ -21,6 +21,7 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('add category');
         try {
 
             $category = Category::create([
@@ -43,6 +44,7 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
+        $this->authorize('edit category');
         try {
             $category->update([
                 'name' => $request->name,
@@ -61,6 +63,7 @@ class CategoryController extends Controller
     {
         //TODO: check if category has products
 
+        $this->authorize('delete category');
         try {
             $ids = explode(',', $id);
             Category::whereIn('id', $ids)->delete();

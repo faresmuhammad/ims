@@ -17,15 +17,18 @@ class OrderController extends Controller
     {
         $order = Order::where('reference_code', $reference_code)->with('items')->first();
         if ($type == 'supplier') {
+            $this->authorize('make supplier order');
             return Inertia::render('Order/Supplier', [
                 'order' => $order,
                 'suppliers' => Supplier::select('id', 'name')->get()
             ]);
         } elseif ($type == 'return') {
+            $this->authorize('make return order');
             return Inertia::render('Order/Return', [
                 'order' => $order,
             ]);
         } else {
+            $this->authorize('make customer order');
             return Inertia::render('Order/Customer', [
                 'order' => $order
             ]);

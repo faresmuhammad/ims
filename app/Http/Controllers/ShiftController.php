@@ -23,10 +23,10 @@ class ShiftController extends Controller
     //start shift
     public function start(Request $request)
     {
+        $this->authorize('start shift');
         //check for unfinished shift before start a new one
         $activeShift = Shift::active()->first();
         if (!$activeShift) {
-
             $shift = Shift::create([
                 'user_id' => auth()->id(),
                 'start' => now()
@@ -39,6 +39,7 @@ class ShiftController extends Controller
 
     public function end()
     {
+        $this->authorize('end shift');
         $shift = Shift::active()->first();
         if ($shift) {
 

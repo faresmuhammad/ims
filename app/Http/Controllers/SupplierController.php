@@ -12,6 +12,7 @@ class SupplierController extends Controller
 
     public function index()
     {
+        $this->authorize('see all suppliers');
         return Inertia::render('Suppliers', [
             'suppliers' => Supplier::all()
         ]);
@@ -20,6 +21,7 @@ class SupplierController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('add supplier');
         try {
             $supplier = Supplier::create([
                 'code'=> randomCode(),
@@ -29,15 +31,15 @@ class SupplierController extends Controller
             $request->session()->flash('severity', 'success');
             $request->session()->flash('message', $supplier->name . ' was created successfully');
         } catch (Exception $exception) {
-            dd($exception);
             $request->session()->flash('severity', 'error');
             $request->session()->flash('message', 'An Error occurred, try again');
         }
     }
-    
-    
+
+
     public function update(Request $request, Supplier $supplier)
     {
+        $this->authorize('edit supplier');
         try {
             $supplier->update([
                 'name' => $request->name,
@@ -53,6 +55,7 @@ class SupplierController extends Controller
 
     public function destroy(Request $request,$id)
     {
+        $this->authorize('delete supplier');
         try {
             $ids = explode(',', $id);
             Supplier::whereIn('id', $ids)->delete();

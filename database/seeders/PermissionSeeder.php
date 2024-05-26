@@ -32,6 +32,7 @@ class PermissionSeeder extends Seeder
             'edit product' => [1, 2, 3],
             'see product stocks' => [1, 2, 3],
             'edit stock' => [1, 2, 3],
+            'delete stock' => [1, 2, 3],
             //suppliers
             'see all suppliers' => [1, 2, 3],
             'add supplier' => [1, 2, 3],

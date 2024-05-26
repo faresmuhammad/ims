@@ -16,6 +16,7 @@ class StockController extends Controller
 
     public function store(NewStockRequest $request, OrderService $service)
     {
+        $this->authorize('make supplier order');
         $validated = $request->safe();
         return $service->completeSupplierOrder($validated);
     }
@@ -23,6 +24,7 @@ class StockController extends Controller
 
     public function update(Stock $stock, UpdateStockRequest $request)
     {
+        $this->authorize('edit stock');
         $validated = $request->safe();
         $stock->update([
             'original_quantity' => $validated->original_quantity,
@@ -43,11 +45,13 @@ class StockController extends Controller
 
     public function order(Request $request, OrderService $service, StockService $stockService)
     {
+        $this->authorize('make customer order');
         return $service->completeCustomerOrder($request, $stockService);
     }
 
     public function return(Request $request, OrderService $service, StockService $stockService)
     {
+        $this->authorize('make return order');
         return $service->completeReturnOrder($request, $stockService);
     }
 
