@@ -1,17 +1,19 @@
 <template>
-    <Head :title="product.name" />
+    <Head :title="product.name"/>
     <app-layout>
         <div class="card h-full">
             <div class="flex justify-content-between">
                 <h2>{{ product.name }}</h2>
                 <div>
                     <Button
+                        v-if="can('edit product')"
                         icon="pi pi-pencil"
                         rounded
                         class="w-2.5rem h-2.5rem p-0 mr-2"
                         @click="editDialog = true"
                     />
                     <Button
+                        v-if="can('delete product')"
                         icon="pi pi-trash"
                         rounded
                         class="w-2.5rem h-2.5rem p-0 p-button-danger"
@@ -26,14 +28,14 @@
                     <!-- TODO: update product price from here, update all stocks price if they have the same price and return warning if they have multiple prices to update them from stocks tab -->
 
                     <ul class="list-none p-0 m-0">
-                        <info-item label="Code" :value="product.code" />
-                        <info-item label="Name" :value="product.name" />
+                        <info-item label="Code" :value="product.code"/>
+                        <info-item label="Name" :value="product.name"/>
 
                         <info-item
                             label="Description"
                             :value="product.description"
                         />
-                        <info-item label="Price" :value="product.price" />
+                        <info-item label="Price" :value="product.price"/>
 
                         <info-item
                             label="Stock Offset"
@@ -50,7 +52,7 @@
                     </ul>
                 </TabPanel>
                 <!-- TODO: Add validation on A. quantity and parts & S. quantity and parts & discount and discount limit & expire date -->
-                <TabPanel header="Stocks">
+                <TabPanel header="Stocks" v-if="can('see product stocks')">
                     <DataTable
                         :value="product.stocks"
                         showGridlines
@@ -241,7 +243,7 @@
                             header="Supplier"
                             class="text-center"
                         ></Column>
-                        <Column rowEditor />
+                        <Column v-if="can('edit stock')" rowEditor/>
                     </DataTable>
                 </TabPanel>
             </TabView>
@@ -344,7 +346,7 @@
                         style="font-size: 3rem"
                     />
                     <span
-                        >Are you sure you will delete
+                    >Are you sure you will delete
                         <span class="color-red">{{ product.name }}?</span></span
                     >
                 </div>
@@ -370,26 +372,29 @@
 <script setup>
 import AppLayout from "@/Layouts/AppLayout.vue";
 import InfoItem from "@/Components/InfoItem.vue";
-import { Head, router } from "@inertiajs/vue3";
-import { reactive, ref } from "vue";
-import { useToast } from "primevue/usetoast";
-import { formatExpireDate } from "@/helpers";
+import {Head, router} from "@inertiajs/vue3";
+import {reactive, ref} from "vue";
+import {useToast} from "primevue/usetoast";
+import {formatExpireDate} from "@/helpers";
+import {usePermission} from "../composables/permissions";
+
+const {can} = usePermission()
 const toast = useToast();
 const props = defineProps({
     product: Object,
     categories: Object,
 });
 
-const productInfo = reactive({ ...props.product });
+const productInfo = reactive({...props.product});
 const editDialog = ref(false);
 const deleteConfirmation = ref(false);
 
 const editingRows = ref([]);
-const editInputStyle = { width: "10%", "text-align": "center" };
+const editInputStyle = {width: "10%", "text-align": "center"};
 
 //FIXME: updates can't be visible to the user until the page is reloaded
 const updateStock = (event) => {
-    const { newData } = event;
+    const {newData} = event;
     console.log(newData);
     axios.put("/stocks/" + newData.code, {
         original_quantity: newData.original_quantity,
@@ -400,7 +405,7 @@ const updateStock = (event) => {
         discount_limit: newData.discount_limit,
         expire_date: newData.expire_date,
         price: newData.price,
-    }).then(()=>{
+    }).then(() => {
         window.location.reload()
     });
 };
@@ -410,7 +415,7 @@ const unavailableStockClass = (data) => {
         data.sold_quantity === data.original_quantity &&
         data.sold_parts === data.available_parts
     ) {
-        return { backgroundColor: "var(--surface-hover)" };
+        return {backgroundColor: "var(--surface-hover)"};
     }
 };
 

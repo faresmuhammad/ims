@@ -10,10 +10,10 @@
                     <Toolbar class="mb-4">
                         <template v-slot:end>
                             <div class="my-2">
-                                <Button label="New" icon="pi pi-plus" class="p-button-success mr-2"
+                                <Button v-if="can('add category')" label="New" icon="pi pi-plus" class="p-button-success mr-2"
                                     @click="newCategoryDialog = true" />
-                                <Button label="Delete" icon="pi pi-trash" class="p-button-danger"
-                                    v-if="selectedCategories.length > 0" @click="deleteConfirmation = true" />
+                                <Button  label="Delete" icon="pi pi-trash" class="p-button-danger"
+                                    v-if="can('delete category') && selectedCategories.length > 0" @click="deleteConfirmation = true" />
                             </div>
                         </template>
 
@@ -23,7 +23,7 @@
                         v-model:expandedRows="expandingRows" :value="categories" editMode="row"
                         @row-edit-save="updateCategory" dataKey="id">
                         <Column expander style="width: 1rem" />
-                        <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                        <Column v-if="can('delete category')" selectionMode="multiple" headerStyle="width: 3rem"></Column>
                         <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header">
                             <template #body="{ data, field }">
                                 {{ data[field] }}
@@ -33,7 +33,7 @@
                                 <Textarea v-else v-model="data[field]" rows="1" cols="50" autoResize autofocus />
                             </template>
                         </Column>
-                        <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center">
+                        <Column v-if="can('edit category')" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center">
                         </Column>
                         <!-- FIXME: selection and editing doesn't work in expansion slot -->
                         <!-- FIXME: hide table header row -->
@@ -41,7 +41,7 @@
                             <DataTable :value="slotProps.data.subcategories" v-model:selection="selectedSubcategories"
                                 v-model:editingRows="editingRowss" headerClass="noHeader" editMode="row"
                                 @row-edit-save="updateCategory" dataKey="id">
-                                <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                                <Column v-if="can('delete category')" selectionMode="multiple" headerStyle="width: 3rem"></Column>
                                 <Column v-for="col in columns" :key="col.field" :field="col.field" :header="col.header">
                                     <template #body="{ data, field }">
                                         {{ data[field] }}
@@ -52,8 +52,7 @@
                                             autofocus />
                                     </template>
                                 </Column>
-                                <Column :rowEditor="true" style="width: 10%; min-width: 8rem"
-                                    bodyStyle="text-align:center">
+                                <Column v-if="can('edit category')" :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center">
                                 </Column>
                             </DataTable>
                         </template>
@@ -111,8 +110,9 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import { reactive, ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import {usePermission} from "../composables/permissions";
 
-
+const {can} = usePermission()
 const toast = useToast();
 
 const props = defineProps({

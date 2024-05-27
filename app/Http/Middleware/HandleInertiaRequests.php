@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\UserSharedResource;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,7 +40,8 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'message' => session('message'),
                 'severity' => session('severity')
-            ]
+            ],
+            'user' => fn() => auth()->user() ? new UserSharedResource(auth()->user()) : null,
         ]);
     }
 }

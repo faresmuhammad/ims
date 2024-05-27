@@ -5,7 +5,8 @@
         <div class="card h-full">
             <div class="flex justify-content-between">
                 <h2>Settings</h2>
-                <Button v-if="!editMode" icon="pi pi-pencil" rounded class="w-2.5rem h-2.5rem p-0 mr-2"
+                <Button v-if="!editMode && can('edit settings')" icon="pi pi-pencil" rounded
+                        class="w-2.5rem h-2.5rem p-0 mr-2"
                         @click="editMode = true"/>
             </div>
             <div v-for="(items, key) in settings">
@@ -15,7 +16,7 @@
                                   v-model:value="changedSettings[setting.key]"/>
                 </ul>
             </div>
-            <div class="flex justify-content-end gap-4" v-if="editMode">
+            <div class="flex justify-content-end gap-4" v-if="editMode && can('edit settings')">
                 <Button label="Apply" security="primary" @click="updateSettings"/>
                 <Button label="Cancel" outlined @click="editMode = false"/>
             </div>
@@ -29,7 +30,9 @@ import {Head} from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SettingItem from "@/Components/SettingItem.vue";
 import {reactive, ref} from "vue";
+import {usePermission} from "../composables/permissions";
 
+const {can} = usePermission()
 const props = defineProps({
     settings: Object
 })
@@ -44,6 +47,7 @@ const updateSettings = () => {
         })
             .then((response) => {
                 console.log(`${key} setting is updated`)
+                editMode.value = false
             }).catch(error => {
                 console.log(error)
             });

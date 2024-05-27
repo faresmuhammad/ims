@@ -1,26 +1,26 @@
 <template>
 
-    <Head title="Shifts" />
+    <Head title="Shifts"/>
     <app-layout>
 
         <div class="card">
             <!-- Start and Stop Shift buttons -->
             <div class="flex justify-content-end">
-                <Button v-if="activeShift" label="End Shift" severity="danger" @click="endShift" />
-                <Button v-else label="Start Shift" @click="startShift" />
+                <Button v-if="activeShift && can('end shift')" label="End Shift" severity="danger" @click="endShift"/>
+                <Button v-if="!activeShift && can('start shift')" label="Start Shift" @click="startShift"/>
             </div>
             <DataTable :value="shifts" showGridlines stripedRows editMode="cell"
-                @cell-edit-init="(event) => { if (event.field === 'realAmount') moneyCalcDialog = true; }"
-                @cell-edit-complete="updateShift" :rowClass="activeRow">
-                <Column field="startDate" header="Start Date" class="text-center" />
-                <Column field="startTime" header="Start Time" class="text-center" />
-                <Column field="endDate" header="End Date" class="text-center" />
-                <Column field="endTime" header="End Time" class="text-center" />
-                <!-- TODO: blur if not admin -->
+                       @cell-edit-init="(event) => { if (event.field === 'realAmount') moneyCalcDialog = true; }"
+                       @cell-edit-complete="updateShift" :rowClass="activeRow">
+                <Column field="startDate" header="Start Date" class="text-center"/>
+                <Column field="startTime" header="Start Time" class="text-center"/>
+                <Column field="endDate" header="End Date" class="text-center"/>
+                <Column field="endTime" header="End Time" class="text-center"/>
                 <Column field="expectedAmount" header="Expected Amount" class="text-center">
                     <template #body="{ data, field }">
                         <!-- format this to money format -->
-                        {{ data[field] }}
+                        <div v-if="can('see shift expected amount')">{{ data[field] }}</div>
+                        <div v-else class="mask">0000</div>
                     </template>
 
                 </Column>
@@ -29,51 +29,50 @@
                         <!-- format this to money format -->
                         {{ data[field] }}
                     </template>
-                    <template #editor="{ data, field }">
+                    <template v-if="can('set shift real amount')" #editor="{ data, field }">
                         {{ data[field] }}
                     </template>
                 </Column>
-                <!-- TODO: blur if not admin -->
-                <Column field="difference" header="Difference" class="text-center" />
-                <Column field="user" header="User" class="text-center" />
+                <Column field="difference" header="Difference" class="text-center" :body-class="can('see shift difference') ? '':'mask'"/>
+                <Column field="user" header="User" class="text-center"/>
             </DataTable>
 
             <!-- TODO: Need more work -->
             <Dialog v-model:visible="moneyCalcDialog" header="Money Calculator" :style="{ width: '450px' }"
-                class="p-fluid">
+                    class="p-fluid">
                 <div class="field">
                     <label for="m200">200</label>
-                    <InputText id="m200" v-model="moneyCalculator.m200" autofocus />
+                    <InputText id="m200" v-model="moneyCalculator.m200" autofocus/>
                 </div>
                 <div class="field">
                     <label for="m100">100</label>
-                    <InputText id="m100" v-model="moneyCalculator.m100" autofocus />
+                    <InputText id="m100" v-model="moneyCalculator.m100" autofocus/>
                 </div>
                 <div class="field">
                     <label for="m50">50</label>
-                    <InputText id="m50" v-model="moneyCalculator.m50" autofocus />
+                    <InputText id="m50" v-model="moneyCalculator.m50" autofocus/>
                 </div>
                 <div class="field">
                     <label for="m20">20</label>
-                    <InputText id="m20" v-model="moneyCalculator.m20" autofocus />
+                    <InputText id="m20" v-model="moneyCalculator.m20" autofocus/>
                 </div>
                 <div class="field">
                     <label for="m10">10</label>
-                    <InputText id="m10" v-model="moneyCalculator.m10" autofocus />
+                    <InputText id="m10" v-model="moneyCalculator.m10" autofocus/>
                 </div>
                 <div class="field">
                     <label for="m5">5</label>
-                    <InputText id="m5" v-model="moneyCalculator.m5" autofocus />
+                    <InputText id="m5" v-model="moneyCalculator.m5" autofocus/>
                 </div>
                 <div class="field">
                     <label for="m1">1</label>
-                    <InputText id="m1" v-model="moneyCalculator.m1" autofocus />
+                    <InputText id="m1" v-model="moneyCalculator.m1" autofocus/>
                 </div>
 
 
                 <template #footer>
-                    <Button label="Cancel" icon="pi pi-times" outlined @click="moneyCalcDialog = false" />
-                    <Button label="Save" icon="pi pi-check" @click="updateRealAmount" />
+                    <Button label="Cancel" icon="pi pi-times" outlined @click="moneyCalcDialog = false"/>
+                    <Button label="Save" icon="pi pi-check" @click="updateRealAmount"/>
                 </template>
             </Dialog>
         </div>
@@ -81,10 +80,12 @@
 </template>
 
 <script setup>
-import { Head, router } from '@inertiajs/vue3';
+import {Head, router} from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { reactive, ref } from 'vue';
+import {reactive, ref} from 'vue';
+import {usePermission} from "../composables/permissions";
 
+const {can} = usePermission()
 const props = defineProps({
     shifts: Object,
     activeShift: Object
@@ -102,7 +103,7 @@ const moneyCalculator = reactive({
 })
 
 const activeRow = (data) => {
-    return [{ 'bg-primary': data.endDate == null }]
+    return [{'bg-primary': data.endDate == null}]
 }
 
 const startShift = () => {
@@ -123,11 +124,11 @@ const endShift = () => {
     })
 }
 
-//TODO: Need more work 
+//TODO: Need more work
 const updateRealAmount = () => {
-    const { m200, m100, m50, m20, m10, m5, m1 } = moneyCalculator
+    const {m200, m100, m50, m20, m10, m5, m1} = moneyCalculator
     const total = 200 * m200 + 100 * m100 + 50 * m50 + 20 * m20 + 10 * m10 + 5 * m5 + 1 * m1;
-    console.log(moneyCalculator,total);
+    console.log(moneyCalculator, total);
 }
 
 const updateShift = (event) => {
@@ -136,7 +137,7 @@ const updateShift = (event) => {
 
     //in case the shift is running
     //update the start date and time only
-    
+
     //in case the shift is over
     //updating start or end date -> recalculate the expected amount and update the difference
     //updating real amount -> update the difference
@@ -145,3 +146,8 @@ const updateShift = (event) => {
 }
 
 </script>
+<style>
+.mask {
+    filter: blur(10px);
+}
+</style>
