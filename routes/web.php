@@ -72,5 +72,4 @@ Route::middleware('auth')->group(function () {
     Route::put('settings/{setting:key}', [SettingController::class, 'update']);
 });
 
-Route::get('statistics/total-revenue', [StatisticsController::class, 'totalRevenue']);
-
+Route::get('statistics', [StatisticsController::class, 'index']);
