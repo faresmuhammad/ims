@@ -49,6 +49,7 @@ class OrderController extends Controller
         ]);
     }
 
+    //unused
     public function update(Order $order, Request $request, OrderService $service)
     {
         $service->updateOrder($order, $request);

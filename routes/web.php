@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StatisticsController;
+use App\Models\OrderItem;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -33,7 +35,10 @@ Route::middleware('guest')->group((function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
 
-    Route::inertia('/', 'Dashboard');
+//    Route::inertia('/', 'Dashboard');
+    Route::get('/', function () {
+        return Inertia::render('Dashboard');
+    });
     Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
     Route::resource('suppliers', SupplierController::class)->except(['create', 'show', 'edit']);
     Route::resource('products', ProductController::class)->except(['create', 'edit']);
@@ -57,13 +62,15 @@ Route::middleware('auth')->group(function () {
     Route::put('/stocks/{stock:code}', [StockController::class, 'update']);
 
     //Shifts
-    Route::get('shifts',[ShiftController::class,'index']);
+    Route::get('shifts', [ShiftController::class, 'index']);
     Route::post('shift/start', [ShiftController::class, 'start']);
     Route::put('shift/end', [ShiftController::class, 'end']);
 
     //Settings
-    Route::get('settings',[SettingController::class,'index']);
-    Route::get('settings/{setting:key}',[SettingController::class,'get']);
-    Route::put('settings/{setting:key}',[SettingController::class,'update']);
+    Route::get('settings', [SettingController::class, 'index']);
+    Route::get('settings/{setting:key}', [SettingController::class, 'get']);
+    Route::put('settings/{setting:key}', [SettingController::class, 'update']);
 });
+
+Route::get('statistics/total-revenue', [StatisticsController::class, 'totalRevenue']);
 

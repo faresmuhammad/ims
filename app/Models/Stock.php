@@ -22,6 +22,11 @@ class Stock extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
     public function scopeAvailable(Builder $query)
     {
         return $query->where('available_quantity', '>', 0)
