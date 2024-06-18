@@ -33,7 +33,13 @@
                         {{ data[field] }}
                     </template>
                 </Column>
-                <Column field="difference" header="Difference" class="text-center" :body-class="can('see shift difference') ? '':'mask'"/>
+                <Column field="difference" header="Difference" class="text-center" >
+                    <template #body="{ data, field }">
+                        <!-- format this to money format -->
+                        <div v-if="can('see shift difference')">{{ data[field] }}</div>
+                        <div v-else class="mask">0000</div>
+                    </template>
+                </Column>
                 <Column field="user" header="User" class="text-center"/>
             </DataTable>
 
