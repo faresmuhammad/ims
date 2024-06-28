@@ -3,27 +3,6 @@ Project InventoryManagementSystem {
     note: 'Inventory Management System Database'
 }
 
-enum Gender{
-  male
-  female
-}
-
-enum CategoryTarget{
-  Customer
-  Owner
-}
-
-enum OrderStatus{
-  Processing
-  Shipped
-  OnTheWay
-  Delivered
-}
-
-enum PaymentMethod{
-  Cash
-  CreditCard
-}
 
 Table Users {
   id bigint [pk]
@@ -68,6 +47,7 @@ Table Products{
   price double [default: 0.0]
   category_id bigint [ref: > Categories.id]
   stock_offset int [default: 0]
+  parts_per_unit int [default: 0]
   created_at timestamp
   updated_at timestamp
 }
@@ -75,7 +55,6 @@ Table Products{
 
 
 
-//Related to IMS System
 Table Suppliers{
   id bigint [pk]
   code string [unique]
@@ -92,20 +71,26 @@ Table Orders{
   supplier_id bigint [ref: > Suppliers.id]
   date timestamp
   total_amount double
-  payment_method PaymentMethod
   //This discount is overall order discount and it's separated from discount per item
   discount float [default: 0.0]
-  is_draft bool [default: true]
+  completed bool [default: false]
 }
 
 Table OrderItems{
   id bigint [pk]
   order_id bigint [ref: > Orders.id]
+  //check if this relation correct
   product_id bigint [ref: - Products.id]
+  stock_id bigint [ref: > Stocks.id]
   discount float [default: 0.0]
-  price_per_unit double
+  discount_limit float [null]
+  unit_price double
   quantity int [default: 1]
   parts int  [default: 0]
+  expire_date date [null]
+  total_amount double
+  created_at datetime
+  updated_at datetime
 }
 
 Table Stocks{
@@ -115,6 +100,7 @@ Table Stocks{
   supplier_id bigint [ref: > Suppliers.id]
   expire_date date [null]
   original_quantity int
+  original_parts int
   available_quantity int
   available_parts int
   sold_quantity int
@@ -135,7 +121,7 @@ Table Notes{
 
 Table Shifts{
     id bigint [pk]
-    start datetime [not null, note: "Default value is the current datetime"]
+    start datetime [not null, default: now()]
     end datetime [null, default: null]
     expected_amount double [null]
     real_amount double [null]
