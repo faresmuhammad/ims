@@ -64,8 +64,7 @@ const logout = () => {
 <template>
     <div class="layout-topbar">
         <a href="#" class="layout-topbar-logo">
-            <img src="https://sakai.primevue.org/layout/images/logo-dark.svg" alt="logo" />
-            <span>SAKAI</span>
+            <span>IMS</span>
         </a>
 
         <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">

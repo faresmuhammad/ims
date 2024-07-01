@@ -3,6 +3,11 @@ Project InventoryManagementSystem {
     note: 'Inventory Management System Database'
 }
 
+enum SettingType {
+  integer
+  date
+  date_range
+}
 
 Table Users {
   id bigint [pk]
@@ -121,20 +126,16 @@ Table Notes{
 
 Table Shifts{
     id bigint [pk]
-    start datetime [not null, default: now()]
+    start datetime [not null, note: "Default value is the current datetime"]
     end datetime [null, default: null]
     expected_amount double [null]
     real_amount double [null]
     difference double [null]
     user_id bigint [ref: > Users.id]
-
-enum SettingType{
-  integer
-  date
-  date_range
 }
 
-Table Settings{
+
+Table Settings {
   id bigint [pk]
   key string [unique]
   category string [null]
